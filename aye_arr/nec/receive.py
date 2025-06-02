@@ -196,7 +196,13 @@ class NECReceiver(PulseReceiver):
                 # None of the bound remotes had a button binding for the command
                 if not known and debug:
                     for remote in self.__remotes[addr]:
-                        print(f"Unknown command (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x})")
+                        print(f"Unknown command (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x}). ", end="")
+
+                        keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
+                        if len(keys) == 1:
+                            print(f"Likely '{keys[0]}'")
+                        else:
+                            print(f"No known command")
 
             # The address does not match one of the bound remotes
             elif len(self.__remotes) == 0 or debug:

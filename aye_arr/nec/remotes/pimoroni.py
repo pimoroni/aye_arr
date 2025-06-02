@@ -11,27 +11,27 @@ class PimoroniRemote(RemoteDescriptor):
     ADDRESS = 0x00
 
     BUTTON_CODES = {
-        "POWER": 0x45,
-        "MODE": 0x46,
-        "MUTE": 0x47,
-        "PLAY": 0x44,
-        "PREV": 0x40,
-        "NEXT": 0x43,
-        "EQ": 0x07,
-        "MINUS": 0x15,
-        "PLUS": 0x09,
-        "ZERO": 0x16,
-        "S": 0x19,
-        "SCAN": 0x0d,
-        "ONE": 0x0c,
-        "TWO": 0x18,
-        "THREE": 0x5e,
-        "FOUR": 0x08,
-        "FIVE": 0x1c,
-        "SIX": 0x5a,
-        "SEVEN": 0x42,
-        "EIGHT": 0x52,
-        "NINE": 0x4a
+        "ANTICLOCK": 0x45,
+        "UP": 0x46,
+        "CLOCKWISE": 0x47,
+        "LEFT": 0x44,
+        "OK/STOP": 0x40,
+        "RIGHT": 0x43,
+        "RETURN/UNDO": 0x07,
+        "DOWN": 0x15,
+        "MENU/ACTION": 0x09,
+        "1/RED": 0x16,
+        "2/YELLOW": 0x19,
+        "3/GREEN": 0x0d,
+        "4/CYAN": 0x0c,
+        "5/BLUE": 0x18,
+        "6/MAGENTA": 0x5e,
+        "7/WARM": 0x08,
+        "8/WHITE": 0x1c,
+        "9/COOL": 0x5a,
+        "RECORD": 0x42,
+        "0/RAINBOW": 0x52,
+        "PLAY/PAUSE": 0x4a
         }
 
     def __init__(self):
