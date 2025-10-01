@@ -165,6 +165,17 @@ class NECReceiver(PulseReceiver):
                 # Go through all the bound remotes with the address
                 known = False
                 for remote in self.__remotes[addr]:
+                    # Perform the general callback for any command received
+                    if remote.on_any is not None:
+                        remote.on_any(cmd)
+
+                    # Perform the callback only for known commands that are received
+                    if remote.on_known is not None:
+                        for key, val in remote.BUTTON_CODES.items():
+                            if val == cmd:
+                                remote.on_known(key)
+                                break
+
                     try:
                         # Attempt to get the button associated with the command
                         # Raises a KeyError if it fails
@@ -202,7 +213,7 @@ class NECReceiver(PulseReceiver):
                         if len(keys) == 1:
                             print(f"Likely '{keys[0]}'")
                         else:
-                            print(f"No known command")
+                            print("No known command")
 
             # The address does not match one of the bound remotes
             elif len(self.__remotes) == 0 or debug:

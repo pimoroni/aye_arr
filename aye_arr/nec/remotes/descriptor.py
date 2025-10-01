@@ -14,27 +14,29 @@ class RemoteDescriptor:
 
     def __init__(self):
         self.__buttons = {}
+        self.on_known = None
+        self.on_any = None
 
     def bind(self, name, on_press, on_repeat=True, on_release=False):
         if name not in self.BUTTON_CODES:
             raise KeyError(f"Name '{name}' is not a bindable button of the '{self.NAME}' remote")
 
-        self.__bind(self.BUTTON_CODES[name], on_press,
-                    on_press if on_repeat is True else on_repeat,
-                    None if on_release is False else on_release)
+        self.bind_code(self.BUTTON_CODES[name], on_press, on_repeat, on_release)
 
-    def __bind(self, code, on_press, on_repeat, on_release):
+    def bind_code(self, code, on_press, on_repeat=True, on_release=False):
         if code in self.__buttons:
             raise ValueError(f"A button with the code '0x{code:0x}' is already bound to the '{self.NAME}' remote. Use a different code")
-        self.__buttons[code] = ButtonHandler(on_press, on_repeat, on_release)
+        self.__buttons[code] = ButtonHandler(on_press,
+                                             on_press if on_repeat is True else on_repeat,
+                                             None if on_release is False else on_release)
 
     def unbind(self, name):
         if name not in self.BUTTON_CODES:
             raise KeyError(f"Name '{name}' is not a bindable button of the '{self.NAME}' remote")
 
-        self.__unbind(self.BUTTON_CODES[name])
+        self.unbind_code(self.BUTTON_CODES[name])
 
-    def __unbind(self, code):
+    def unbind_code(self, code):
         del self.__buttons[code]
 
     def button(self, code):
