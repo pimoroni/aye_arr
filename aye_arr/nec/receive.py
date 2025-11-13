@@ -130,12 +130,20 @@ class NECReceiver(PulseReceiver):
 
                 # Perform the repeat actions of the last command, if any
                 for callback in self.__repeat_callbacks:
-                    callback()
+                    if isinstance(callback, (tuple, list)):
+                        params = callback[1:]
+                        callback[0](*params)
+                    else:
+                        callback()
                 return
 
             # Perform the release actions of the last command, if any
             for callback in self.__release_callbacks:
-                callback()
+                if isinstance(callback, (tuple, list)):
+                    params = callback[1:]
+                    callback[0](*params)
+                else:
+                    callback()
 
             # Clear out the callback lists
             self.__release_callbacks.clear()
@@ -191,7 +199,11 @@ class NECReceiver(PulseReceiver):
 
                         # Perform the press action of the bound button, if present
                         if button.on_press is not None:
-                            button.on_press()
+                            if isinstance(button.on_press, (tuple, list)):
+                                params = button.on_press[1:]
+                                button.on_press[0](*params)
+                            else:
+                                button.on_press()
 
                         # Queue up the repeat action of the bound button, if present
                         if button.on_repeat is not None:
