@@ -74,6 +74,9 @@ class PulseReceiver:
         received pulses could cause data to be discarded.
         """
 
+        if not self.__sm.active():
+            raise RuntimeError("Cannot decode IR signals. Check that you have called `.start()` on the receiver first.")
+
         # Go through all counts currently stored
         while len(self.__counts) > 0:
             count_pair = self.__counts.popleft()   # Extract the oldest count pair
@@ -103,6 +106,9 @@ class PulseReceiver:
         This function includes a low-pass filter to removes any "blips" in
         received pulses to recover data that may otherwise be discarded.
         """
+
+        if not self.__sm.active():
+            raise RuntimeError("Cannot decode IR signals. Check that you have called `.start()` on the receiver first.")
 
         # Go through all counts currently stored
         while len(self.__counts) > 0:
