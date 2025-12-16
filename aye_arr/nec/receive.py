@@ -13,14 +13,19 @@ from .remotes import KNOWN_REMOTES
 
 
 class NECReceiver(PulseReceiver):
+
+    SHORT_PRESS_MS = 250
+
     def __init__(self, pin_num, pio, sm, extended_addresses=False,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None):
         self.__remotes = {}
         self.__last_code = NEC_REPEAT
         self.__last_rx = time.ticks_ms()
+        self.__last_code_rx = self.__last_rx
         self.__extended = extended_addresses
         self.__repeat_callbacks = []
         self.__release_callbacks = []
+        self.__short_callbacks = []
         super().__init__(pin_num, pio, sm, debug_pin_base, debug_blip_pin)
 
         # Set up debug pin for scoping
@@ -98,6 +103,13 @@ class NECReceiver(PulseReceiver):
         self.__check_repeat_timeout(debug)
         super().decode(filter_threshold, debug)
 
+    def __perform_callback(self, callback):
+        if isinstance(callback, (tuple, list)):
+            params = callback[1:]
+            callback[0](*params)
+        else:
+            callback()
+
     def __check_repeat_timeout(self, debug):
         # Expire our last code if it was received too long ago and isn't a repeat
         if time.ticks_diff(time.ticks_ms(), self.__last_rx) > NEC_REPEAT_TIMEOUT_MS and \
@@ -106,13 +118,19 @@ class NECReceiver(PulseReceiver):
                 print(f"Last code 0x{self.__last_code:08x} expired")
             self.__last_code = NEC_REPEAT
 
-            # Perform the release actions of the last command, if any
-            for callback in self.__release_callbacks:
-                callback()
+            if len(self.__short_callbacks) > 0:
+                # Perform the short press actions of the last command, if any
+                for callback in self.__short_callbacks:
+                    self.__perform_callback(callback)
+            else:
+                # Perform the release actions of the last command, if any
+                for callback in self.__release_callbacks:
+                    self.__perform_callback(callback)
 
             # Clear out the callback lists
-            self.__release_callbacks.clear()
             self.__repeat_callbacks.clear()
+            self.__release_callbacks.clear()
+            self.__short_callbacks.clear()
 
     def __analyse(self, pulses, debug=False):
         # Attempt to extract a code from the received pulses
@@ -128,29 +146,33 @@ class NECReceiver(PulseReceiver):
                 if debug and self.__last_code != NEC_REPEAT:
                     print(f"Repeat received, loading code 0x{self.__last_code:08x}")
 
-                # Perform the repeat actions of the last command, if any
-                for callback in self.__repeat_callbacks:
-                    if isinstance(callback, (tuple, list)):
-                        params = callback[1:]
-                        callback[0](*params)
-                    else:
-                        callback()
+                # Only perform actions related to repeats if there are no short callbacks, or if there are but the period has expired
+                if len(self.__short_callbacks) == 0 or time.ticks_diff(time.ticks_ms(), self.__last_code_rx) > self.SHORT_PRESS_MS:
+                    # A repeat was encountered so clear out any short press callbacks
+                    self.__short_callbacks.clear()
+
+                    # Perform the repeat actions of the last command, if any
+                    for callback in self.__repeat_callbacks:
+                        self.__perform_callback(callback)
                 return
 
-            # Perform the release actions of the last command, if any
-            for callback in self.__release_callbacks:
-                if isinstance(callback, (tuple, list)):
-                    params = callback[1:]
-                    callback[0](*params)
-                else:
-                    callback()
+            if len(self.__short_callbacks) > 0:
+                # Perform the short press actions of the last command, if any
+                for callback in self.__short_callbacks:
+                    self.__perform_callback(callback)
+            else:
+                # Perform the release actions of the last command, if any
+                for callback in self.__release_callbacks:
+                    self.__perform_callback(callback)
 
             # Clear out the callback lists
             self.__release_callbacks.clear()
             self.__repeat_callbacks.clear()
+            self.__short_callbacks.clear()
 
             # Update the last code
             self.__last_code = code
+            self.__last_code_rx = self.__last_rx
 
             # Extract the address from the code, optionally supporting extended addresses
             addr = code & 0xff          # 8 bit address
@@ -199,11 +221,7 @@ class NECReceiver(PulseReceiver):
 
                         # Perform the press action of the bound button, if present
                         if button.on_press is not None:
-                            if isinstance(button.on_press, (tuple, list)):
-                                params = button.on_press[1:]
-                                button.on_press[0](*params)
-                            else:
-                                button.on_press()
+                            self.__perform_callback(button.on_press)
 
                         # Queue up the repeat action of the bound button, if present
                         if button.on_repeat is not None:
@@ -212,6 +230,10 @@ class NECReceiver(PulseReceiver):
                         # Queue up the release action of the bound button, if present
                         if button.on_release is not None:
                             self.__release_callbacks.append(button.on_release)
+
+                        # Queue up the short press action of the bound button, if present
+                        if button.on_short is not None:
+                            self.__short_callbacks.append(button.on_short)
 
                     except KeyError:
                         pass
