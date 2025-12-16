@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+from .descriptor import RemoteDescriptor
 from .argon import ArgonRemote
 from .pimoroni import PimoroniRemote
 from .lg import LGRemote

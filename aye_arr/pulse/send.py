@@ -74,6 +74,9 @@ class PulseSender:
         The burst phase is encoded with the carrier frequency.
         """
 
+        if not self.__sm.active():
+            raise RuntimeError("Cannot send IR signals. Check that you have called `.start()` on the sender first.")
+
         # Convert the pulse times (in microseconds) into 16 bit counts the PIO program accepts
         burst = self.__pulse_us_to_count(burst_us) & 0xffff
         idle = self.__pulse_us_to_count(idle_us) & 0xffff

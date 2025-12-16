@@ -43,6 +43,7 @@ class NECReceiver(PulseReceiver):
     def reset(self):
         self.__last_code = NEC_REPEAT
         self.__last_rx = time.ticks_ms()
+        self.__last_code_rx = self.__last_rx
         super().reset()
 
     def __extract_code(self, pulses, debug=False):
@@ -106,9 +107,9 @@ class NECReceiver(PulseReceiver):
     def __perform_callback(self, callback):
         if isinstance(callback, (tuple, list)):
             params = callback[1:]
-            callback[0](*params)
+            callback[0](*params, self.__last_code_rx)
         else:
-            callback()
+            callback(self.__last_code_rx)
 
     def __check_repeat_timeout(self, debug):
         # Expire our last code if it was received too long ago and isn't a repeat
@@ -147,7 +148,8 @@ class NECReceiver(PulseReceiver):
                     print(f"Repeat received, loading code 0x{self.__last_code:08x}")
 
                 # Only perform actions related to repeats if there are no short callbacks, or if there are but the period has expired
-                if len(self.__short_callbacks) == 0 or time.ticks_diff(time.ticks_ms(), self.__last_code_rx) > self.SHORT_PRESS_MS:
+                if len(self.__short_callbacks) == 0 or \
+                   time.ticks_diff(self.__last_rx, self.__last_code_rx) > self.SHORT_PRESS_MS:
                     # A repeat was encountered so clear out any short press callbacks
                     self.__short_callbacks.clear()
 
@@ -197,13 +199,13 @@ class NECReceiver(PulseReceiver):
                 for remote in self.__remotes[addr]:
                     # Perform the general callback for any command received
                     if remote.on_any is not None:
-                        remote.on_any(cmd)
+                        remote.on_any(cmd, self.__last_code_rx)
 
                     # Perform the callback only for known commands that are received
                     if remote.on_known is not None:
                         for key, val in remote.BUTTON_CODES.items():
                             if val == cmd:
-                                remote.on_known(key)
+                                remote.on_known(key, self.__last_code_rx)
                                 break
 
                     try:
