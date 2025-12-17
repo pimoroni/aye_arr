@@ -66,14 +66,12 @@ receiver.bind(remote)
 try:
     receiver.start()
 
-    print("IR receiver successfully started")
-
     # Loop forever
     while True:
         # Decode any IR pulses received since the last time this was called.
-        # This should be done as frequently as possible to avoid button inputs feeling sluggish
+        # This should be done as frequently as possible to avoid inputs feeling sluggish
         receiver.decode()
 
-# Stop any running effects and turn off all the outputs
+# End the program by stopping any active systems
 finally:
     receiver.stop()

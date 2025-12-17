@@ -38,5 +38,6 @@ try:
         # Have a period of silence between each burst
         time.sleep(SILENCE_DELAY)
 
+# End the program by stopping any active systems
 finally:
     sender.stop()

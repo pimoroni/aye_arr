@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2024 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
 import time
 from machine import Pin
+import aye_arr.logging as logging
 from ..pulse.common import DebugPin
 from ..pulse.receive import PulseReceiver, DEFAULT_FILTER_THRESHOLD
 from .common import pulse_us_valid, NEC_REPEAT, NEC_REPEAT_TIMEOUT_MS, \
@@ -17,7 +18,8 @@ class NECReceiver(PulseReceiver):
     SHORT_PRESS_MS = 250
 
     def __init__(self, pin_num, pio, sm, extended_addresses=False,
-                 debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None):
+                 debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
+                 logging_level=logging.LOG_WARN):
         self.__remotes = {}
         self.__last_code = NEC_REPEAT
         self.__last_rx = time.ticks_ms()
@@ -26,6 +28,7 @@ class NECReceiver(PulseReceiver):
         self.__repeat_callbacks = []
         self.__release_callbacks = []
         self.__short_callbacks = []
+        logging.level = logging_level
         super().__init__(pin_num, pio, sm, debug_pin_base, debug_blip_pin)
 
         # Set up debug pin for scoping
@@ -40,13 +43,21 @@ class NECReceiver(PulseReceiver):
         else:
             self.__remotes[addr] = [remote_descriptor]
 
+    def start(self):
+        super().start()
+        logging.warn("--- IR receiver started ---")
+
+    def stop(self):
+        super().stop()
+        logging.warn("--- IR receiver stopped ---")
+
     def reset(self):
         self.__last_code = NEC_REPEAT
         self.__last_rx = time.ticks_ms()
         self.__last_code_rx = self.__last_rx
         super().reset()
 
-    def __extract_code(self, pulses, debug=False):
+    def __extract_code(self, pulses):
         while len(pulses) > 0:
             pulse = pulses[0]
 
@@ -60,8 +71,7 @@ class NECReceiver(PulseReceiver):
             if not pulse_us_valid(pulse.burst, NEC_START_BURST_US) and \
                not pulse_us_valid(pulse.idle, NEC_START_DATA_US):
                 self.__debug_error_pin.on()
-                if debug:
-                    print(f"Invalid Start [{pulse.burst}, {pulse.idle}], Exp: {NEC_START_BURST_US} then {NEC_START_DATA_US} or {NEC_START_REPEAT_US}")
+                logging.debug(f"Invalid Start [{pulse.burst}, {pulse.idle}], Exp: {NEC_START_BURST_US} then {NEC_START_DATA_US} or {NEC_START_REPEAT_US}")
                 del pulses[0]
                 self.__debug_error_pin.off()
                 continue        # Skip to the next pulse
@@ -87,8 +97,7 @@ class NECReceiver(PulseReceiver):
                     continue    # Skip to the next data pulse
 
                 self.__debug_error_pin.on()
-                if debug:
-                    print(f"Invalid Data [{pulse.burst}, {pulse.idle}], Exp {NEC_DATA_BURST_US} then {NEC_DATA_ONE_US} or {NEC_DATA_ZERO_US}")
+                logging.debug(f"Invalid Data [{pulse.burst}, {pulse.idle}], Exp {NEC_DATA_BURST_US} then {NEC_DATA_ONE_US} or {NEC_DATA_ZERO_US}")
                 self.__debug_error_pin.off()
                 return None     # No code was extracted
 
@@ -96,13 +105,13 @@ class NECReceiver(PulseReceiver):
 
         return None     # No code was extracted
 
-    def decode_no_filter(self, debug=False):
-        self.__check_repeat_timeout(debug)
-        super().decode_no_filter(debug)
+    def decode_no_filter(self):
+        self.__check_repeat_timeout()
+        super().decode_no_filter()
 
-    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD, debug=False):   # with filter
-        self.__check_repeat_timeout(debug)
-        super().decode(filter_threshold, debug)
+    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD):   # with filter
+        self.__check_repeat_timeout()
+        super().decode(filter_threshold)
 
     def __perform_callback(self, callback):
         if isinstance(callback, (tuple, list)):
@@ -111,12 +120,11 @@ class NECReceiver(PulseReceiver):
         else:
             callback(self.__last_code_rx)
 
-    def __check_repeat_timeout(self, debug):
+    def __check_repeat_timeout(self):
         # Expire our last code if it was received too long ago and isn't a repeat
         if time.ticks_diff(time.ticks_ms(), self.__last_rx) > NEC_REPEAT_TIMEOUT_MS and \
            self.__last_code != NEC_REPEAT:
-            if debug:
-                print(f"Last code 0x{self.__last_code:08x} expired")
+            logging.info(f"Last code 0x{self.__last_code:08x} expired")
             self.__last_code = NEC_REPEAT
 
             if len(self.__short_callbacks) > 0:
@@ -133,9 +141,9 @@ class NECReceiver(PulseReceiver):
             self.__release_callbacks.clear()
             self.__short_callbacks.clear()
 
-    def __analyse(self, pulses, debug=False):
+    def __analyse(self, pulses):
         # Attempt to extract a code from the received pulses
-        code = self.__extract_code(pulses, debug)
+        code = self.__extract_code(pulses)
 
         # Was a code was extracted?
         if code is not None:
@@ -144,8 +152,8 @@ class NECReceiver(PulseReceiver):
 
             # Was the code a repeat?
             if code == NEC_REPEAT:
-                if debug and self.__last_code != NEC_REPEAT:
-                    print(f"Repeat received, loading code 0x{self.__last_code:08x}")
+                if self.__last_code != NEC_REPEAT:
+                    logging.info(f"Repeat received, loading code 0x{self.__last_code:08x}")
 
                 # Only perform actions related to repeats if there are no short callbacks, or if there are but the period has expired
                 if len(self.__short_callbacks) == 0 or \
@@ -180,16 +188,14 @@ class NECReceiver(PulseReceiver):
             addr = code & 0xff          # 8 bit address
             if addr != ((code >> 8) ^ 0xff) & 0xff:
                 if not self.__extended:
-                    if debug:
-                        print(f"Address check failed: 0x{addr:02x} != 0x{((code >> 8) ^ 0xff) & 0xff:02x}")
+                    logging.warn(f"Address check failed: 0x{addr:02x} != 0x{((code >> 8) ^ 0xff) & 0xff:02x}")
                     return
                 addr |= code & 0xff00
 
             # Extract the command from the code
             cmd = (code >> 16) & 0xff
             if cmd != (code >> 24) ^ 0xff:
-                if debug:
-                    print(f"Command check failed: 0x{cmd:02x} != 0x{(code >> 24) ^ 0xff:02x}, Addr: {addr:02x}")
+                logging.warn(f"Command check failed: 0x{cmd:02x} != 0x{(code >> 24) ^ 0xff:02x}, Addr: {addr:02x}")
                 return
 
             # Does the address match one of the bound remotes?
@@ -216,7 +222,7 @@ class NECReceiver(PulseReceiver):
                         # At least one bound remote has this button
                         known = True
 
-                        if debug:
+                        if logging.level >= logging.LOG_WARN:
                             for key, val in remote.BUTTON_CODES.items():
                                 if val == cmd:
                                     print(f"'{key}' (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x})")
@@ -241,10 +247,11 @@ class NECReceiver(PulseReceiver):
                         pass
 
                 # None of the bound remotes had a button binding for the command
-                if not known and debug:
+                if not known and logging.level >= logging.LOG_WARN:
                     for remote in self.__remotes[addr]:
                         print(f"Unknown command (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x}). ", end="")
 
+                        # Suggest which remote command it may be
                         keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
                         if len(keys) == 1:
                             print(f"Likely '{keys[0]}'")
@@ -252,9 +259,10 @@ class NECReceiver(PulseReceiver):
                             print("No known command")
 
             # The address does not match one of the bound remotes
-            elif len(self.__remotes) == 0 or debug:
+            elif logging.level >= logging.LOG_WARN:
                 print(f"Unknown code (Addr 0x{addr:02x}, Cmd 0x{cmd:02x}) received. ", end="")
 
+                # Suggest which remote command it may be
                 known = False
                 for remote in KNOWN_REMOTES:
                     if remote.ADDRESS == addr:

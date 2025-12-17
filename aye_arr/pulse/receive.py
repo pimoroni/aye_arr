@@ -4,10 +4,11 @@
 
 import rp2
 from machine import Pin
-from collections import deque  # , namedtuple
+from collections import deque
 from .pio.rx import pulsereader, pulsereader_debug, FREQUENCY, \
                     count_to_burst_us, count_to_idle_us, TIMEOUT_REACHED
 from .common import Pulse, DebugPin
+
 
 # Constants
 MAX_BUFFER = const(1024)
@@ -56,11 +57,11 @@ class PulseReceiver:
         while sm.rx_fifo() > 0:
             self.__counts.append(sm.get())
 
-    def __analyse(self, pulses, debug=False):
+    def __analyse(self, pulses):
         # Override this to analyse a received sequence of pulses
         pass
 
-    def decode_no_filter(self, debug=False):
+    def decode_no_filter(self):
         """
         Checks for any newly received pulses since the last time `decode` was
         called. Once a sufficient number of pulses has been received, as
@@ -84,7 +85,7 @@ class PulseReceiver:
             # Did the count timeout get reached?
             if count_pair == TIMEOUT_REACHED:
                 # Analyse, and clear the pulse sequence
-                self.__analyse(self.__sequence, debug)
+                self.__analyse(self.__sequence)
                 self.__sequence.clear()
                 continue        # Skip to the next pulse
 
@@ -93,7 +94,7 @@ class PulseReceiver:
                           count_to_idle_us(count_pair & 0xffff))
             self.__sequence.append(pulse)
 
-    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD, debug=False):   # with filter
+    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD):   # with filter
         """
         Checks for any newly received pulses since the last time `decode` was
         called. Once a sufficient number of pulses has been received, as
@@ -122,7 +123,7 @@ class PulseReceiver:
                     self.__last_pulse = None
 
                 # Analyse, and clear the pulse sequence
-                self.__analyse(self.__sequence, debug)
+                self.__analyse(self.__sequence)
                 self.__sequence.clear()
                 continue        # Skip to the next pulse
 
