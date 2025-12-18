@@ -2,11 +2,10 @@ import time
 from aye_arr.nec import NECSender
 
 """
-An example of how to send an infrared command to an address.
+An example of how to send an infrared command to an address, with repeats.
 
-In it the chosen command is sent to the address multiple times in
-bursts, followed by a period of silence. The number of codes per
-burst, as well as the burst and silence timings can be adjusted.
+Repeats are used by remotes to signal that a button is being held down.
+These should be sent every 108ms to match the NEC protocol spec.
 
 To use this code, connect an IR LED (with a suitable resistor) to the IR_TX_PIN.
 
@@ -17,9 +16,9 @@ Press CTRL+C to exit the program.
 IR_TX_PIN = 0           # The pin to send the IR pulses on
 ADDRESS = 0x00          # The 8-bit address to send the command to
 COMMAND = 0x46          # The 8-bit command to send to the address
-BURSTS = 5              # The number of times to send the code in quick succession
-BURST_DELAY = 0.01      # The time (in seconds) between each code send
-SILENCE_DELAY = 1       # The time (in seconds) between each burst
+REPEATS = 5             # The number of times to send the repeat
+REPEAT_DELAY = 0.108    # the time (in seconds) between each repeat.
+SILENCE_DELAY = 1       # The time (in seconds) between each code send
 
 # Set up an NECSender on the TX pin, using PIO 0 and SM 0.
 sender = NECSender(IR_TX_PIN, 0, 0)
@@ -31,10 +30,13 @@ try:
     # Loop forever
     while True:
         # Send the intended address and command several times to help it be detected
-        print(f"Sending Addr 0x{ADDRESS:02x}, Cmd 0x{COMMAND:02x} {BURSTS}x times")
-        for i in range(BURSTS):
-            sender.send_addr_cmd(ADDRESS, COMMAND)
-            time.sleep(BURST_DELAY)
+        print(f"Sending Addr 0x{ADDRESS:02x}, Cmd 0x{COMMAND:02x}")
+
+        # Send repeats rather than resending the code
+        for i in range(REPEATS):
+            print(f"Sending Repeat")
+            time.sleep(REPEAT_DELAY)
+            sender.send_repeat()
 
         # Have a period of silence between each burst
         time.sleep(SILENCE_DELAY)
