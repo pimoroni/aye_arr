@@ -22,8 +22,8 @@ class NECReceiver(PulseReceiver):
                  logging_level=logging.LOG_WARN):
         self.__remotes = {}
         self.__last_code = NEC_REPEAT
-        self.__last_rx = time.ticks_ms()
-        self.__last_code_rx = self.__last_rx
+        self.__received_ms = time.ticks_ms()
+        self.__last_code_ms = self.__received_ms
         self.__extended = extended_addresses
         self.__repeat_callbacks = []
         self.__release_callbacks = []
@@ -53,8 +53,8 @@ class NECReceiver(PulseReceiver):
 
     def reset(self):
         self.__last_code = NEC_REPEAT
-        self.__last_rx = time.ticks_ms()
-        self.__last_code_rx = self.__last_rx
+        self.__received_ms = time.ticks_ms()
+        self.__last_code_ms = self.__received_ms
         super().reset()
 
     def __extract_code(self, pulses):
@@ -113,33 +113,24 @@ class NECReceiver(PulseReceiver):
         self.__check_repeat_timeout()
         super().decode(filter_threshold)
 
-    def __perform_callback(self, callback):
+    def __perform_callback(self, callback, *args):
         if isinstance(callback, (tuple, list)):
             params = callback[1:]
-            callback[0](*params, self.__last_code_rx)
+            callback[0](*params, args)
         else:
-            callback(self.__last_code_rx)
+            callback(args)
 
     def __check_repeat_timeout(self):
         # Expire our last code if it was received too long ago and isn't a repeat
-        if time.ticks_diff(time.ticks_ms(), self.__last_rx) > NEC_REPEAT_TIMEOUT_MS and \
+        current_ms = time.ticks_ms()
+        if time.ticks_diff(current_ms, self.__received_ms) > NEC_REPEAT_TIMEOUT_MS and \
            self.__last_code != NEC_REPEAT:
             logging.info(f"Last code 0x{self.__last_code:08x} expired")
+
+            # Perform the general release action for the last code, if any
+            self.__on_release(self.__last_code, current_ms, self.__last_code_ms)
+
             self.__last_code = NEC_REPEAT
-
-            if len(self.__short_callbacks) > 0:
-                # Perform the short press actions of the last command, if any
-                for callback in self.__short_callbacks:
-                    self.__perform_callback(callback)
-            else:
-                # Perform the release actions of the last command, if any
-                for callback in self.__release_callbacks:
-                    self.__perform_callback(callback)
-
-            # Clear out the callback lists
-            self.__repeat_callbacks.clear()
-            self.__release_callbacks.clear()
-            self.__short_callbacks.clear()
 
     def __analyse(self, pulses):
         # Attempt to extract a code from the received pulses
@@ -148,131 +139,143 @@ class NECReceiver(PulseReceiver):
         # Was a code was extracted?
         if code is not None:
             # Record the time of this new code
-            self.__last_rx = time.ticks_ms()
+            self.__received_ms = time.ticks_ms()
 
             # Was the code a repeat?
             if code == NEC_REPEAT:
                 if self.__last_code != NEC_REPEAT:
                     logging.info(f"Repeat received, loading code 0x{self.__last_code:08x}")
 
-                # Only perform actions related to repeats if there are no short callbacks, or if there are but the period has expired
-                if len(self.__short_callbacks) == 0 or \
-                   time.ticks_diff(self.__last_rx, self.__last_code_rx) > self.SHORT_PRESS_MS:
-                    # A repeat was encountered so clear out any short press callbacks
-                    self.__short_callbacks.clear()
-
-                    # Perform the repeat actions of the last command, if any
-                    for callback in self.__repeat_callbacks:
-                        self.__perform_callback(callback)
+                # Perform the general repeat action for the last code, if any
+                self.__on_repeat(self.__last_code, self.__received_ms, self.__last_code_ms)
                 return
 
-            if len(self.__short_callbacks) > 0:
-                # Perform the short press actions of the last command, if any
-                for callback in self.__short_callbacks:
-                    self.__perform_callback(callback)
-            else:
-                # Perform the release actions of the last command, if any
-                for callback in self.__release_callbacks:
-                    self.__perform_callback(callback)
+            self.__on_release(self.__last_code, self.__received_ms, self.__last_code_ms)
 
-            # Clear out the callback lists
-            self.__release_callbacks.clear()
-            self.__repeat_callbacks.clear()
+            logging.info(f"Code received, 0x{code:08x}")
+
+            # Perform the general press action for the last code, if any
+            self.__on_press(code, self.__received_ms, self.__last_code_ms)
+
+            # Update the last variables
+            self.__last_code = code
+            self.__last_code_ms = self.__received_ms
+
+    def __on_release(self, code, ms, last_press_ms):
+        if len(self.__short_callbacks) > 0:
+            # Perform the short press actions of the last command, if any
+            for callback in self.__short_callbacks:
+                self.__perform_callback(callback)
+        else:
+            # Perform the release actions of the last command, if any
+            for callback in self.__release_callbacks:
+                self.__perform_callback(callback)
+
+        # Clear out the callback lists
+        self.__repeat_callbacks.clear()
+        self.__release_callbacks.clear()
+        self.__short_callbacks.clear()
+
+    def __on_repeat(self, code, ms, last_press_ms):
+        if len(self.__short_callbacks) == 0 or \
+           time.ticks_diff(ms, last_press_ms) > self.SHORT_PRESS_MS:
+            # A repeat was encountered so clear out any short press callbacks
             self.__short_callbacks.clear()
 
-            # Update the last code
-            self.__last_code = code
-            self.__last_code_rx = self.__last_rx
+            # Perform the repeat actions of the last command, if any
+            for callback in self.__repeat_callbacks:
+                self.__perform_callback(callback, ms, last_press_ms)
 
-            # Extract the address from the code, optionally supporting extended addresses
-            addr = code & 0xff          # 8 bit address
-            if addr != ((code >> 8) ^ 0xff) & 0xff:
-                if not self.__extended:
-                    logging.warn(f"Address check failed: 0x{addr:02x} != 0x{((code >> 8) ^ 0xff) & 0xff:02x}")
-                    return
-                addr |= code & 0xff00
-
-            # Extract the command from the code
-            cmd = (code >> 16) & 0xff
-            if cmd != (code >> 24) ^ 0xff:
-                logging.warn(f"Command check failed: 0x{cmd:02x} != 0x{(code >> 24) ^ 0xff:02x}, Addr: {addr:02x}")
+    def __on_press(self, code, ms, last_press_ms):
+        # Extract the address from the code, optionally supporting extended addresses
+        addr = code & 0xff          # 8 bit address
+        if addr != ((code >> 8) ^ 0xff) & 0xff:
+            if not self.__extended:
+                logging.warn(f"Address check failed: 0x{addr:02x} != 0x{((code >> 8) ^ 0xff) & 0xff:02x}")
                 return
+            addr |= code & 0xff00
 
-            # Does the address match one of the bound remotes?
-            if addr in self.__remotes:
-                # Go through all the bound remotes with the address
-                known = False
-                for remote in self.__remotes[addr]:
-                    # Perform the general callback for any command received
-                    if remote.on_any is not None:
-                        remote.on_any(cmd, self.__last_code_rx)
+        # Extract the command from the code
+        cmd = (code >> 16) & 0xff
+        if cmd != (code >> 24) ^ 0xff:
+            logging.warn(f"Command check failed: 0x{cmd:02x} != 0x{(code >> 24) ^ 0xff:02x}, Addr: {addr:02x}")
+            return
 
-                    # Perform the callback only for known commands that are received
-                    if remote.on_known is not None:
+        # Does the address match one of the bound remotes?
+        if addr in self.__remotes:
+            # Go through all the bound remotes with the address
+            known = False
+            for remote in self.__remotes[addr]:
+                # Perform the general callback for any command received
+                if remote.on_any is not None:
+                    known |= remote.on_any(cmd, ms, last_press_ms)
+
+                # Perform the callback only for known commands that are received
+                if remote.on_known is not None:
+                    for key, val in remote.BUTTON_CODES.items():
+                        if val == cmd:
+                            known |= remote.on_known(key, ms, last_press_ms)
+                            break
+
+                try:
+                    # Attempt to get the button associated with the command
+                    # Raises a KeyError if it fails
+                    button = remote.button(cmd)
+
+                    # At least one bound remote has this button
+                    known = True
+
+                    if logging.level >= logging.LOG_WARN:
                         for key, val in remote.BUTTON_CODES.items():
                             if val == cmd:
-                                remote.on_known(key, self.__last_code_rx)
-                                break
+                                print(f"'{key}' (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x})")
 
-                    try:
-                        # Attempt to get the button associated with the command
-                        # Raises a KeyError if it fails
-                        button = remote.button(cmd)
+                    # Perform the press action of the bound button, if present
+                    if button.on_press is not None:
+                        self.__perform_callback(button.on_press, ms, last_press_ms)
 
-                        # At least one bound remote has this button
-                        known = True
+                    # Queue up the repeat action of the bound button, if present
+                    if button.on_repeat is not None:
+                        self.__repeat_callbacks.append(button.on_repeat)
 
-                        if logging.level >= logging.LOG_WARN:
-                            for key, val in remote.BUTTON_CODES.items():
-                                if val == cmd:
-                                    print(f"'{key}' (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x})")
+                    # Queue up the release action of the bound button, if present
+                    if button.on_release is not None:
+                        self.__release_callbacks.append(button.on_release)
 
-                        # Perform the press action of the bound button, if present
-                        if button.on_press is not None:
-                            self.__perform_callback(button.on_press)
+                    # Queue up the short press action of the bound button, if present
+                    if button.on_short is not None:
+                        self.__short_callbacks.append(button.on_short)
 
-                        # Queue up the repeat action of the bound button, if present
-                        if button.on_repeat is not None:
-                            self.__repeat_callbacks.append(button.on_repeat)
+                except KeyError:
+                    pass
 
-                        # Queue up the release action of the bound button, if present
-                        if button.on_release is not None:
-                            self.__release_callbacks.append(button.on_release)
+            # None of the bound remotes had a button binding for the command
+            if not known and logging.level >= logging.LOG_WARN:
+                for remote in self.__remotes[addr]:
+                    print(f"Unknown command (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x}). ", end="")
 
-                        # Queue up the short press action of the bound button, if present
-                        if button.on_short is not None:
-                            self.__short_callbacks.append(button.on_short)
+                    # Suggest which remote command it may be
+                    keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
+                    if len(keys) == 1:
+                        print(f"Likely '{keys[0]}'")
+                    else:
+                        print("No known command")
 
-                    except KeyError:
-                        pass
+        # The address does not match one of the bound remotes
+        elif logging.level >= logging.LOG_WARN:
+            print(f"Unknown code (Addr 0x{addr:02x}, Cmd 0x{cmd:02x}) received. ", end="")
 
-                # None of the bound remotes had a button binding for the command
-                if not known and logging.level >= logging.LOG_WARN:
-                    for remote in self.__remotes[addr]:
-                        print(f"Unknown command (0x{cmd:02x}) received from bound remote `{remote.NAME}` (0x{addr:02x}). ", end="")
+            # Suggest which remote command it may be
+            known = False
+            for remote in KNOWN_REMOTES:
+                if remote.ADDRESS == addr:
+                    print(", or " if known else "Likely from ", end="")
 
-                        # Suggest which remote command it may be
-                        keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
-                        if len(keys) == 1:
-                            print(f"Likely '{keys[0]}'")
-                        else:
-                            print("No known command")
+                    known = True
+                    keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
+                    if len(keys) == 1:
+                        print(f"'{remote.NAME}.{keys[0]}'", end="")
+                    else:
+                        print(f"'{remote.NAME}' remote", end="")
 
-            # The address does not match one of the bound remotes
-            elif logging.level >= logging.LOG_WARN:
-                print(f"Unknown code (Addr 0x{addr:02x}, Cmd 0x{cmd:02x}) received. ", end="")
-
-                # Suggest which remote command it may be
-                known = False
-                for remote in KNOWN_REMOTES:
-                    if remote.ADDRESS == addr:
-                        print(", or " if known else "Likely from ", end="")
-
-                        known = True
-                        keys = [key for key, val in remote.BUTTON_CODES.items() if val == cmd]
-                        if len(keys) == 1:
-                            print(f"'{remote.NAME}.{keys[0]}'", end="")
-                        else:
-                            print(f"'{remote.NAME}' remote", end="")
-
-                print("" if known else "No known remote")
+            print("" if known else "No known remote")
