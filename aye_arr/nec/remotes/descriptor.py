@@ -4,7 +4,7 @@
 
 from collections import namedtuple
 
-ButtonHandler = namedtuple("ButtonHandler", ("on_press", "on_repeat", "on_release", "on_short"))
+ButtonCallbacks = namedtuple("ButtonCallbacks", ("on_press", "on_repeat", "on_release", "on_short"))
 
 
 class RemoteDescriptor:
@@ -26,9 +26,9 @@ class RemoteDescriptor:
     def bind_code(self, code, on_press, on_repeat=True, on_release=None, on_short=None):
         if code in self.__buttons:
             raise ValueError(f"A button with the code '0x{code:0x}' is already bound to the '{self.NAME}' remote. Use a different code")
-        self.__buttons[code] = ButtonHandler(on_press,
-                                             on_press if on_repeat is True else on_repeat,
-                                             on_release, on_short)
+        self.__buttons[code] = ButtonCallbacks(on_press,
+                                               on_press if on_repeat is True else on_repeat,
+                                               on_release, on_short)
 
     def unbind(self, name):
         if name not in self.BUTTON_CODES:
