@@ -13,35 +13,37 @@ from .common import pulse_us_valid, NEC_REPEAT, NEC_REPEAT_TIMEOUT_MS, \
 from .remotes import KNOWN_REMOTES
 
 
+# Function for performing callbacks with parameters and optional arguments
+def perform_callback(callback, *args):
+    if isinstance(callback, (tuple, list)):
+        params = callback[1:]
+        callback[0](*params, *args)
+    else:
+        callback(*args)
+
+
 class NECReceiver(PulseReceiver):
-
-    SHORT_PRESS_MS = 250
-
-    def __init__(self, pin_num, pio, sm, extended_addresses=False,
+    def __init__(self, pin_num, pio, sm,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
                  logging_level=logging.LOG_WARN):
-        self.__remotes = {}
         self.__last_code = NEC_REPEAT
         self.__received_ms = time.ticks_ms()
         self.__last_code_ms = self.__received_ms
-        self.__extended = extended_addresses
-        self.__repeat_callbacks = []
-        self.__release_callbacks = []
-        self.__short_callbacks = []
+
+        self.__press_callback = None
+        self.__repeat_callback = None
+        self.__release_callback = None
+
         logging.level = logging_level
         super().__init__(pin_num, pio, sm, debug_pin_base, debug_blip_pin)
 
         # Set up debug pin for scoping
         self.__debug_error_pin = DebugPin(debug_error_pin, Pin.OUT)
 
-    def bind(self, remote_descriptor, force=False):
-        addr = remote_descriptor.ADDRESS
-        if addr in self.__remotes:
-            if not force:
-                raise ValueError(f"A remote with the address '0x{addr:0x}' is already bound. Use a different address, or append with 'force=True'")
-            self.__remotes[addr].append(remote_descriptor)
-        else:
-            self.__remotes[addr] = [remote_descriptor]
+    def bind(self, on_press, on_repeat=True, on_release=None):
+        self.__press_callback = on_press,
+        self.__repeat_callback = on_press if on_repeat is True else on_repeat,
+        self.__release_callback = on_release
 
     def start(self):
         super().start()
@@ -113,13 +115,6 @@ class NECReceiver(PulseReceiver):
         self.__check_repeat_timeout()
         super().decode(filter_threshold)
 
-    def __perform_callback(self, callback, *args):
-        if isinstance(callback, (tuple, list)):
-            params = callback[1:]
-            callback[0](*params, args)
-        else:
-            callback(args)
-
     def __check_repeat_timeout(self):
         # Expire our last code if it was received too long ago and isn't a repeat
         current_ms = time.ticks_ms()
@@ -162,14 +157,49 @@ class NECReceiver(PulseReceiver):
             self.__last_code_ms = self.__received_ms
 
     def __on_release(self, code, ms, last_press_ms):
+        if self.__release_callback is not None:
+            perform_callback(self.__release_callback, ms, last_press_ms)
+
+    def __on_repeat(self, code, ms, last_press_ms):
+        if self.__repeat_callback is not None:
+            perform_callback(self.__repeat_callback, ms, last_press_ms)
+
+    def __on_press(self, code, ms, last_press_ms):
+        if self.__press_callback is not None:
+            perform_callback(self.__press_callback, ms, last_press_ms)
+
+
+class NECRemoteReceiver(NECReceiver):
+    SHORT_PRESS_MS = 250
+
+    def __init__(self, pin_num, pio, sm, extended_addresses=False,
+                 debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
+                 logging_level=logging.LOG_WARN):
+        self.__remotes = {}
+        self.__extended = extended_addresses
+        self.__repeat_callbacks = []
+        self.__release_callbacks = []
+        self.__short_callbacks = []
+        super().__init__(pin_num, pio, sm, debug_pin_base, debug_blip_pin, debug_error_pin, logging_level)
+
+    def bind(self, remote_descriptor, force=False):
+        addr = remote_descriptor.ADDRESS
+        if addr in self.__remotes:
+            if not force:
+                raise ValueError(f"A remote with the address '0x{addr:0x}' is already bound. Use a different address, or append with 'force=True'")
+            self.__remotes[addr].append(remote_descriptor)
+        else:
+            self.__remotes[addr] = [remote_descriptor]
+
+    def __on_release(self, code, ms, last_press_ms):
         if len(self.__short_callbacks) > 0:
             # Perform the short press actions of the last command, if any
             for callback in self.__short_callbacks:
-                self.__perform_callback(callback)
+                perform_callback(callback, ms, last_press_ms)
         else:
             # Perform the release actions of the last command, if any
             for callback in self.__release_callbacks:
-                self.__perform_callback(callback)
+                perform_callback(callback, ms, last_press_ms)
 
         # Clear out the callback lists
         self.__repeat_callbacks.clear()
@@ -184,7 +214,7 @@ class NECReceiver(PulseReceiver):
 
             # Perform the repeat actions of the last command, if any
             for callback in self.__repeat_callbacks:
-                self.__perform_callback(callback, ms, last_press_ms)
+                perform_callback(callback, ms, last_press_ms)
 
     def __on_press(self, code, ms, last_press_ms):
         # Extract the address from the code, optionally supporting extended addresses
@@ -208,13 +238,13 @@ class NECReceiver(PulseReceiver):
             for remote in self.__remotes[addr]:
                 # Perform the general callback for any command received
                 if remote.on_any is not None:
-                    known |= remote.on_any(cmd, ms, last_press_ms)
+                    known = True if remote.on_any(cmd, ms, last_press_ms) else known
 
                 # Perform the callback only for known commands that are received
                 if remote.on_known is not None:
                     for key, val in remote.BUTTON_CODES.items():
                         if val == cmd:
-                            known |= remote.on_known(key, ms, last_press_ms)
+                            known = True if remote.on_known(key, ms, last_press_ms) else known
                             break
 
                 try:
@@ -232,7 +262,7 @@ class NECReceiver(PulseReceiver):
 
                     # Perform the press action of the bound button, if present
                     if button.on_press is not None:
-                        self.__perform_callback(button.on_press, ms, last_press_ms)
+                        perform_callback(button.on_press, ms, last_press_ms)
 
                     # Queue up the repeat action of the bound button, if present
                     if button.on_repeat is not None:

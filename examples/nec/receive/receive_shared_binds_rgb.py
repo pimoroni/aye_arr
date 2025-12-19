@@ -1,4 +1,4 @@
-from aye_arr.nec import NECReceiver
+from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 """
@@ -35,7 +35,7 @@ blue = 0
 
 
 # Callback functions to adjust volume and brightness
-def set_colour(colour, _):
+def set_colour(colour, ms, l_ms):
     global red, green, blue
     red = colour[0]
     green = colour[1]
@@ -56,8 +56,8 @@ remote.bind("8/WHITE", (set_colour, WHITE))
 remote.bind("9/COOL", (set_colour, COOL))
 remote.bind("OK/STOP",  (set_colour, BLACK))
 
-# Set up an NECSender on the TX pin, using PIO 1 and SM 0.
-receiver = NECReceiver(IR_RX_PIN, 1, 0)
+# Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

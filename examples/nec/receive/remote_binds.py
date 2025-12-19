@@ -1,4 +1,4 @@
-from aye_arr.nec import NECReceiver
+from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 """
@@ -14,19 +14,19 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 
 
 # Callback functions for different button functions
-def pressed(_):
+def pressed(ms, l_ms):
     print("pressed")
 
 
-def held(_):
+def held(ms, l_ms):
     print("held")
 
 
-def released(_):
+def released(ms, l_ms):
     print("released\n")
 
 
-def short(_):
+def short(ms, l_ms):
     print("short release\n")
 
 
@@ -94,8 +94,8 @@ remote.bind("CLOCKWISE",
             on_short=short)
 
 
-# Set up an NECSender on the TX pin, using PIO 1 and SM 0.
-receiver = NECReceiver(IR_RX_PIN, 1, 0)
+# Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

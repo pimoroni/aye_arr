@@ -1,4 +1,4 @@
-from aye_arr.nec import NECReceiver
+from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import RemoteDescriptor
 
 """
@@ -32,7 +32,7 @@ class Remote(RemoteDescriptor):
 
 
 # Single callback function for all button presses
-def pressed(name, _):
+def pressed(name, ms, l_ms):
     print(f"{name} pressed")
 
 
@@ -43,8 +43,8 @@ remote.bind("LEFT", (pressed, "left"))
 remote.bind("RIGHT", (pressed, "right"))
 remote.bind("DOWN", (pressed, "down"))
 
-# Set up an NECSender on the TX pin, using PIO 1 and SM 0.
-receiver = NECReceiver(IR_RX_PIN, 1, 0)
+# Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

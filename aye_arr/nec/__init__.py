@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: MIT
 
 from .send import NECSender
-from .receive import NECReceiver
+from .receive import NECReceiver, NECRemoteReceiver
