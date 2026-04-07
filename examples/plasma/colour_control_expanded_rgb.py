@@ -6,6 +6,24 @@ from aye_arr.nec.remotes import PimoroniRemote
 from aye_arr.nec import NECRemoteReceiver
 
 
+"""
+An example for the Plasma2350 and IR Stick (Connected to the QW/sT).
+Buttons:
+
+Long Press/Hold:
+1-4 = Increase/Decrease the Red channel
+2-5 = Increase/Decrease the Green channel
+3-6 = Increase/Decrease the Blue channel
+
+Short Press (numpad):
+Sets the LEDs to the colour shown on the remote.
+
+OK/Stop:
+Reduce all channels to zero
+
+"""
+
+
 class State:
     OFF = 0
     ON = 1
@@ -79,6 +97,24 @@ def set_preset(color, ms, v):
     changed = True
 
 
+def update_red(value, ms, v):
+    global rgb, changed
+    rgb[0] = max(min(rgb[0] + value, 255), 0)
+    changed = True
+
+
+def update_green(value, ms, v):
+    global rgb, changed
+    rgb[1] = max(min(rgb[1] + value, 255), 0)
+    changed = True
+
+
+def update_blue(value, ms, v):
+    global rgb, changed
+    rgb[2] = max(min(rgb[2] + value, 255), 0)
+    changed = True
+
+
 def update_speed(value, ms, v):
     global speed, changed
     speed = max(min(speed * value, 10), 0.01)
@@ -113,16 +149,16 @@ def update():
 remote = PimoroniRemote()
 remote.bind("LEFT", (update_speed, 1 / SPEED_MULT))
 remote.bind("RIGHT", (update_speed, SPEED_MULT))
-remote.bind("OK/STOP", toggle_state, on_repeat=None)
-remote.bind("1/RED", on_press=None, on_short=(set_preset, RED))
-remote.bind("2/GREEN", on_press=None, on_short=(set_preset, GREEN))
-remote.bind("3/BLUE", on_press=None, on_short=(set_preset, BLUE))
-remote.bind("4/CYAN", on_press=None, on_short=(set_preset, CYAN))
-remote.bind("5/MAGENTA", on_press=None, on_short=(set_preset, MAGENTA))
-remote.bind("6/YELLOW", on_press=None, on_short=(set_preset, YELLOW))
-remote.bind("7/WARM", on_press=None, on_short=(set_preset, WARM_WHITE))
-remote.bind("8/WHITE", on_press=None, on_short=(set_preset, WHITE))
-remote.bind("9/COOL", on_press=None, on_short=(set_preset, COOL_WHITE))
+remote.bind("1/RED", on_press=None, on_short=(set_preset, RED), on_repeat=(update_red, increment))
+remote.bind("4/CYAN", on_press=None, on_short=(set_preset, CYAN), on_repeat=(update_red, -increment))
+remote.bind("2/GREEN", on_press=None, on_short=(set_preset, GREEN), on_repeat=(update_green, increment))
+remote.bind("5/MAGENTA", on_press=None, on_short=(set_preset, MAGENTA), on_repeat=(update_green, -increment))
+remote.bind("3/BLUE", on_press=None, on_short=(set_preset, BLUE), on_repeat=(update_blue, increment))
+remote.bind("6/YELLOW", on_press=None, on_short=(set_preset, YELLOW), on_repeat=(update_blue, -increment))
+remote.bind("7/WARM", (set_preset, WARM_WHITE))
+remote.bind("8/WHITE", (set_preset, WHITE))
+remote.bind("9/COOL", (set_preset, COOL_WHITE))
+remote.bind("OK/STOP", on_press=None, on_short=toggle_state)
 remote.bind("0/RAINBOW", rainbow)
 
 receiver = NECRemoteReceiver(20, 1, 0)
