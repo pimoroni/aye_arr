@@ -24,13 +24,13 @@ def set_led(color, ms, v):
 
 # Create the remote and setup up what each of our buttons will do.
 remote = PimoroniRemote()
-remote.bind("1/RED", (set_led, RED))
-remote.bind("2/GREEN", (set_led, GREEN))
-remote.bind("3/BLUE", (set_led, BLUE))
-remote.bind("4/CYAN", (set_led, CYAN))
-remote.bind("5/MAGENTA", (set_led, MAGENTA))
-remote.bind("6/YELLOW", (set_led, YELLOW))
-remote.bind("OK/STOP", (set_led, BLACK))
+remote.bind("1_RED", (set_led, RED))
+remote.bind("2_GREEN", (set_led, GREEN))
+remote.bind("3_BLUE", (set_led, BLUE))
+remote.bind("4_CYAN", (set_led, CYAN))
+remote.bind("5_MAGENTA", (set_led, MAGENTA))
+remote.bind("6_YELLOW", (set_led, YELLOW))
+remote.bind("OK_STOP", (set_led, BLACK))
 
 receiver = NECRemoteReceiver(12, 1, 0)
 receiver.bind(remote)

@@ -45,16 +45,16 @@ def set_colour(colour, ms, l_ms):
 
 # Create an instance of the remote, and bind the callback functions to each of its buttons
 remote = PimoroniRemote()
-remote.bind("1/RED", (set_colour, RED))
-remote.bind("2/GREEN", (set_colour, GREEN))
-remote.bind("3/BLUE", (set_colour, BLUE))
-remote.bind("4/CYAN", (set_colour, CYAN))
-remote.bind("5/MAGENTA", (set_colour, MAGENTA))
-remote.bind("6/YELLOW", (set_colour, YELLOW))
-remote.bind("7/WARM", (set_colour, WARM))
-remote.bind("8/WHITE", (set_colour, WHITE))
-remote.bind("9/COOL", (set_colour, COOL))
-remote.bind("OK/STOP",  (set_colour, BLACK))
+remote.bind("1_RED", (set_colour, RED))
+remote.bind("2_GREEN", (set_colour, GREEN))
+remote.bind("3_BLUE", (set_colour, BLUE))
+remote.bind("4_CYAN", (set_colour, CYAN))
+remote.bind("5_MAGENTA", (set_colour, MAGENTA))
+remote.bind("6_YELLOW", (set_colour, YELLOW))
+remote.bind("7_WARM", (set_colour, WARM))
+remote.bind("8_WHITE", (set_colour, WHITE))
+remote.bind("9_COOL", (set_colour, COOL))
+remote.bind("OK_STOP", (set_colour, BLACK))
 
 # Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
 receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)

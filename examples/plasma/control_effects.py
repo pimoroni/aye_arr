@@ -83,12 +83,12 @@ def update_brightness(b, ms, v):
 
 
 remote = PimoroniRemote()
-remote.bind("1/RED", on_press=None, on_short=(set_effect, twinkle))
-remote.bind("2/GREEN", on_press=None, on_short=(set_effect, pulse))
-remote.bind("3/BLUE", on_press=None, on_short=(set_effect, blink))
+remote.bind("1_RED", on_press=None, on_short=(set_effect, twinkle))
+remote.bind("2_GREEN", on_press=None, on_short=(set_effect, pulse))
+remote.bind("3_BLUE", on_press=None, on_short=(set_effect, blink))
 
-remote.bind("0/RAINBOW", on_press=None, on_short=(set_effect, rainbow))
-remote.bind("OK/STOP", on_press=None, on_short=(set_effect, None))
+remote.bind("0_RAINBOW", on_press=None, on_short=(set_effect, rainbow))
+remote.bind("OK_STOP", on_press=None, on_short=(set_effect, None))
 
 remote.bind("CLOCKWISE", on_press=(update_hue, 0.01))
 remote.bind("ANTICLOCK", on_press=(update_hue, -0.01))
