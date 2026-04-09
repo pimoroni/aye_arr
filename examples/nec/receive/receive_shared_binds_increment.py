@@ -18,6 +18,7 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 VOLUME_STEP = 1
 BRIGHTNESS_STEP = 5
 
+
 # Create a description of the remote we are listening for
 class Remote(RemoteDescriptor):
     NAME = "Remote"
@@ -38,13 +39,13 @@ brightness = 0      # An example variable for a system's brightness
 
 
 # Callback functions to adjust volume and brightness
-def adjust_volume(amount, ms, l_ms):
+def adjust_volume(amount):
     global volume
     volume = max(min(volume + amount, 11), 0)
     print(f"Volume = {volume}")
 
 
-def adjust_brightness(amount, ms, l_ms):
+def adjust_brightness(amount):
     global brightness
     brightness = max(min(brightness + amount, 100), 0)
     print(f"Brightness = {brightness}%")

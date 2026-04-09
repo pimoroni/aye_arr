@@ -14,19 +14,19 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 
 
 # Callback functions for different button functions
-def pressed(ms, l_ms):
+def pressed():
     print("pressed")
 
 
-def held(ms, l_ms):
+def held():
     print("held")
 
 
-def released(ms, l_ms):
+def released():
     print("released\n")
 
 
-def short(ms, l_ms):
+def short():
     print("short release\n")
 
 

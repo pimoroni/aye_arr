@@ -17,7 +17,7 @@ BLACK = (0, 0, 0)
 led = RGBLED(18, 19, 20)
 
 
-def set_led(color, ms, v):
+def set_led(color):
 
     led.set_rgb(*color)
 

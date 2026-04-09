@@ -6,21 +6,21 @@ import time
 IR_PIN = 12
 
 
-def press(ms, v):
+def press():
     print("Press!")
 
 
-def short(ms, v):
+def short():
     print("Short Press!")
 
 
-def release(ms, v):
+def release():
     print("Button Released!")
 
 
-def repeat(ms, v):
+def repeat(ms, last_ms):
     # calculate how long the current button has been held
-    held = (time.ticks_ms() - v) / 1000
+    held = time.ticks_diff(ms, last_ms) / 1000
 
     print(f"Repeating/Held button for {held} seconds")
 

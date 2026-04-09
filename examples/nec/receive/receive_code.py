@@ -28,16 +28,16 @@ class Remote(RemoteDescriptor):
         "LEFT": 0x44,
         "RIGHT": 0x43,
         "DOWN": 0x15,
-        }
+    }
 
 
 # Callback function for 
-def received_any(command, ms, l_ms):
+def received_any(command):
     print(f"Received 0x{command:02x}")
     return True
 
 
-def received_known(button, ms, l_ms):
+def received_known(button):
     print(f"Received `{button}`")
     return False
 

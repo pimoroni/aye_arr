@@ -32,19 +32,19 @@ class Remote(RemoteDescriptor):
 
 
 # Callback functions for each of the remote's buttons
-def up(ms, l_ms):
+def up():
     print("up received")
 
 
-def left(ms, l_ms):
+def left():
     print("left received")
 
 
-def right(ms, l_ms):
+def right():
     print("right received")
 
 
-def down(ms, l_ms):
+def down():
     print("down received")
 
 

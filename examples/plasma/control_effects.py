@@ -58,25 +58,25 @@ def rainbow():
         strip.set_hsv(led, hue + offset, saturation, brightness)
 
 
-def set_effect(e, ms, v):
+def set_effect(e):
     global effect
     strip.clear()
     effect = e
 
 
-def update_hue(h, ms, v):
+def update_hue(h):
     global hue
     hue += h
     hue %= 1.0
 
 
-def update_saturation(s, ms, v):
+def update_saturation(s):
     global saturation
     saturation += s
     saturation = min(max(saturation, 0.0), 1.0)
 
 
-def update_brightness(b, ms, v):
+def update_brightness(b):
     global brightness
     brightness += b
     brightness = min(max(brightness, 0.0), 1.0)

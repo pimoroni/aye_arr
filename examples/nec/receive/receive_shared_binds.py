@@ -28,11 +28,11 @@ class Remote(RemoteDescriptor):
         "LEFT": 0x44,
         "RIGHT": 0x43,
         "DOWN": 0x15,
-        }
+    }
 
 
 # Single callback function for all button presses
-def pressed(name, ms, l_ms):
+def pressed(name):
     print(f"{name} pressed")
 
 

@@ -35,7 +35,7 @@ blue = 0
 
 
 # Callback functions to adjust volume and brightness
-def set_colour(colour, ms, l_ms):
+def set_colour(colour):
     global red, green, blue
     red = colour[0]
     green = colour[1]

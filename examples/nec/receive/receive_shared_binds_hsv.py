@@ -19,12 +19,12 @@ VOLUME_STEP = 1
 BRIGHTNESS_STEP = 5
 
 # Colour constants
-RED = 0/6, 1, 1
-GREEN = 2/6, 1, 1
-BLUE = 4/6, 1, 1
-CYAN = 3/6, 1, 1
-MAGENTA = 5/6, 1, 1
-YELLOW = 1/6, 1, 1
+RED = 0 / 6, 1, 1
+GREEN = 2 / 6, 1, 1
+BLUE = 4 / 6, 1, 1
+CYAN = 3 / 6, 1, 1
+MAGENTA = 5 / 6, 1, 1
+YELLOW = 1 / 6, 1, 1
 WHITE = 0, 0, 1
 BLACK = 0, 0, 0
 
@@ -59,7 +59,7 @@ def rgb_from_hsv(h, s, v):
 
 
 # Callback functions to adjust volume and brightness
-def set_hsv(colour, _):
+def set_hsv(colour):
     global hue, sat, val
     hue = colour[0]
     sat = colour[1]
@@ -68,7 +68,8 @@ def set_hsv(colour, _):
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
-def cycle_hue(amount, _):
+
+def cycle_hue(amount):
     global hue
     hue += amount % 1.0
 
@@ -76,7 +77,7 @@ def cycle_hue(amount, _):
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
-def adjust_sat(amount, _):
+def adjust_sat(amount):
     global sat
     sat = max(min(sat + amount, 1.0), 0.0)
 
@@ -84,7 +85,7 @@ def adjust_sat(amount, _):
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
-def adjust_val(amount, _):
+def adjust_val(amount):
     global val
     val = max(min(val + amount, 1.0), 0.0)
 

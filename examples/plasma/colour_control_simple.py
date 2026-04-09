@@ -21,7 +21,7 @@ led_strip = plasma.WS2812(NM_LEDS, color_order=plasma.COLOR_ORDER_BGR)
 led_strip.start()
 
 
-def change_all_rgb(color, ms, v):
+def change_all_rgb(color):
 
     for led in range(NM_LEDS):
         led_strip.set_rgb(led, *color)

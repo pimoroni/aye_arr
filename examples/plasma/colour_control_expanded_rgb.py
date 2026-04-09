@@ -84,44 +84,44 @@ def load():
         pass
 
 
-def toggle_state(ms, v):
+def toggle_state():
     global state, changed
     state = not state
     changed = True
 
 
-def set_preset(color, ms, v):
+def set_preset(color):
     global rgb, changed, state
     rgb = [c for c in color]
     state = State.ON
     changed = True
 
 
-def update_red(value, ms, v):
+def update_red(value):
     global rgb, changed
     rgb[0] = max(min(rgb[0] + value, 255), 0)
     changed = True
 
 
-def update_green(value, ms, v):
+def update_green(value):
     global rgb, changed
     rgb[1] = max(min(rgb[1] + value, 255), 0)
     changed = True
 
 
-def update_blue(value, ms, v):
+def update_blue(value):
     global rgb, changed
     rgb[2] = max(min(rgb[2] + value, 255), 0)
     changed = True
 
 
-def update_speed(value, ms, v):
+def update_speed(value):
     global speed, changed
     speed = max(min(speed * value, 10), 0.01)
     changed = True
 
 
-def rainbow(ms, v):
+def rainbow():
     global rgb, changed, state
     rgb = [-1, -1, -1]
     state = State.ON
