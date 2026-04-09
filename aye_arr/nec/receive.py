@@ -181,7 +181,7 @@ class NECReceiver(PulseReceiver):
 
 
 class NECRemoteReceiver(NECReceiver):
-    SHORT_PRESS_MS = 250
+    SHORT_RELEASE_MS = 250
 
     def __init__(self, pin_num, pio, sm, extended_addresses=False,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
@@ -219,7 +219,7 @@ class NECRemoteReceiver(NECReceiver):
 
     def __on_repeat(self, code, ms, last_press_ms):
         if len(self.__short_callbacks) == 0 or \
-           time.ticks_diff(ms, last_press_ms) > self.SHORT_PRESS_MS:
+           time.ticks_diff(ms, last_press_ms) > self.SHORT_RELEASE_MS:
             # A repeat was encountered so clear out any short release callbacks
             self.__short_callbacks.clear()
 
