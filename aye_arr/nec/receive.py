@@ -52,8 +52,8 @@ class NECReceiver(PulseReceiver):
         self.__debug_error_pin = DebugPin(debug_error_pin, Pin.OUT)
 
     def bind(self, on_press, on_repeat=True, on_release=None):
-        self.__press_callback = on_press,
-        self.__repeat_callback = on_press if on_repeat is True else on_repeat,
+        self.__press_callback = on_press
+        self.__repeat_callback = on_press if on_repeat is True else on_repeat
         self.__release_callback = on_release
 
     def start(self):
