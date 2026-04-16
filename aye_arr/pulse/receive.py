@@ -27,7 +27,11 @@ class PulseReceiver:
 
         # For the RP2350, shift the gpio_base of this PIO if the pin is above 32
         base = 16 if pin_num >= 32 else 0
-        rp2.PIO(pio).gpio_base(base)
+        try:
+            rp2.PIO(pio).gpio_base(base)
+        except AttributeError:
+            # Handle RP2040 not having the gpio_base function
+            pass
 
         # Load either the regular or debug program into the chosen StateMachine
         if debug_pin_base is None:
