@@ -1,5 +1,5 @@
-from aye_arr.nec import NECReceiver
 import aye_arr.logging as logging
+from aye_arr.nec import NECReceiver
 
 """
 An example of how to set up an NECReceiver to listen for IR codes.

@@ -1,10 +1,11 @@
-import time
-import plasma
 import json
-from machine import Pin
-from aye_arr.nec.remotes import PimoroniRemote
-from aye_arr.nec import NECRemoteReceiver
+import time
 
+import plasma
+from machine import Pin
+
+from aye_arr.nec import NECRemoteReceiver
+from aye_arr.nec.remotes import PimoroniRemote
 
 """
 An example for the Plasma2350 and IR Stick (Connected to the QW/sT).
