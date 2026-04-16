@@ -35,7 +35,7 @@ try:
 
         # Send repeats rather than resending the code
         for i in range(REPEATS):
-            print(f"Sending Repeat")
+            print("Sending Repeat")
             time.sleep(REPEAT_DELAY)
             sender.send_repeat()
 

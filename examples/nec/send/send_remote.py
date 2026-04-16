@@ -46,7 +46,7 @@ try:
     # Loop forever
     while True:
         # Send the intended address and command several times to help it be detected
-        print(f"Sending Addr 0x{Remote.ADDRESS:02x}, Cmd 0x{Remote.BUTTON_CODES["UP"]:02x} {BURSTS}x times")
+        print(f"Sending Addr 0x{Remote.ADDRESS:02x}, Cmd 0x{Remote.BUTTON_CODES['UP']:02x} {BURSTS}x times")
         for i in range(BURSTS):
             sender.send_remote(Remote, "UP")
             time.sleep(BURST_DELAY)

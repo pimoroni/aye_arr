@@ -45,12 +45,12 @@ try:
     # Loop forever
     while True:
         # Send the intended address and command once per loop
-        print(f"Sending Addr 0x{Remote.ADDRESS:02x}, Cmd 0x{Remote.BUTTON_CODES["UP"]:02x}")
+        print(f"Sending Addr 0x{Remote.ADDRESS:02x}, Cmd 0x{Remote.BUTTON_CODES['UP']:02x}")
         sender.send_remote(Remote, "UP")
 
         # Send repeats rather than resending the code
         for i in range(REPEATS):
-            print(f"Sending Repeat")
+            print("Sending Repeat")
             time.sleep(REPEAT_DELAY)
             sender.send_repeat()
 
