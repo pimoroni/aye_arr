@@ -3,18 +3,21 @@ requires = ["hatchling", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
 [project]
-name = "boilerplate-micropython"
+name = "aye_arr"
 dynamic = ["version", "readme"]
 authors = [
-  { name="Phil", email="phil@pimoroni.com" },
+    { name = "Chris P", email = "chris@pimoroni.com" },
 ]
-description = "boilerplate example for MicroPython libraries"
+maintainers = [
+    { name = "Chris P", email = "chris@pimoroni.com" },
+]
+description = "Aye Arr: Infrared TX/RX library for RP2040/2350 MicroPython"
 classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
 
 [tool.hatch.version]
-path = "src/boilerplate/__init__.py"
+version = "1.0.0"
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
@@ -26,7 +29,11 @@ fragments = [
 
 [tool.hatch.build]
 include = [
-    "src/boilerplate/__init__.py",
+    "aye_arr/*.py",
+    "aye_arr/nec/*.py",
+    "aye_arr/nec/remotes/*.py",
+    "aye_arr/pulse/*.py",
+    "aye_arr/pulse/pio/*.py",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.txt"
@@ -66,11 +73,16 @@ ignore = [
     'tox.ini',
     'tests/*',
     'examples/*',
+    'examples/nec/*',
+    'examples/nec/receive/*',
+    'examples/nec/send/*',
+    'examples/plasma/*',
+    'examples/tiny_2350/*',
     'tools/*',
     'requirements-dev.txt',
     'package.json'
 ]
 
 [project.urls]
-GitHub = "https://www.github.com/pimoroni/boilerplate-micropython"
+GitHub = "https://www.github.com/pimoroni/aye_arr"
 Homepage = "https://www.pimoroni.com"
