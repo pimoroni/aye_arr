@@ -1,7 +1,8 @@
-from aye_arr.nec import NECRemoteReceiver
-from aye_arr.nec.remotes import PimoroniRemote
 from motor import Motor, pico_motor_shim
 from pimoroni import REVERSED_DIR
+
+from aye_arr.nec import NECRemoteReceiver
+from aye_arr.nec.remotes import PimoroniRemote
 
 # Create the remote and setup up what each of our buttons will do.
 remote = PimoroniRemote()
