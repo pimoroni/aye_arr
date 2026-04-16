@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from machine import Pin, mem32
-from rp2 import StateMachine
+from rp2 import PIO, StateMachine
 
 from .common import DebugPin
 from .pio.tx import CLOCKS_PER_CYCLE, pulsesender, pulsesender_debug
@@ -25,16 +25,13 @@ class PulseSender:
                  debug_burst_pin=None, debug_send_pin=None, debug_wait_pin=None,
                  stalled_wait=True):
 
-        if pio < 0 or pio > 1:
-            raise ValueError("pio out of range. Expected 0 or 1")
+        # Check the PIO is valid
+        try:
+            _ = PIO(pio)
+        except ValueError:
+            raise ValueError("pio out of range. Expected 0 or 1 (or 2 if on RP2350)") from None
 
-        # This is a better check for PIO numbers, but PIO2 seems to stall
-        # once the TX fifo is full, so avoiding it for now
-        # try:
-        #     _ = PIO(pio)
-        # except:
-        #     raise ValueError("pio out of range. Expected 0 or 1 (or 2 if on RP2350)")
-
+        # Check the State Machine is valid
         if sm < 0 or sm > 3:
             raise ValueError("sm out of range. Expected 0 to 3")
 
@@ -47,12 +44,23 @@ class PulseSender:
             self.__SM_MASK = (1 << (PIO_FSTAT_TXEMPTY_LSB + sm))
         self.__PIO_FREQ = carrier_freq * CLOCKS_PER_CYCLE
 
+        # For the RP2350, shift the gpio_base of this PIO if the pin is above 32
+        base = 16 if pin_num >= 32 else 0
+        try:
+            PIO(pio).gpio_base(base)
+        except AttributeError:
+            # Handle RP2040 not having the gpio_base function
+            pass
+
         # Load either the regular or debug program into the chosen StateMachine
         if debug_burst_pin is None:
             self.__sm = StateMachine(sm + (pio * 4), pulsesender,
                                      freq=self.__PIO_FREQ,
                                      sideset_base=Pin(pin_num))
         else:
+            if debug_burst_pin < base or debug_burst_pin > base + 31:
+                raise ValueError(f"'debug_burst_pin' is outside the GPIO base of 'pin_num'.\
+                                 Choose a 'debug_burst_pin' between {base} and {base + 31}") from None
             self.__sm = StateMachine(sm + (pio * 4), pulsesender_debug,
                                      freq=self.__PIO_FREQ,
                                      set_base=Pin(debug_burst_pin),

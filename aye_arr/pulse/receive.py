@@ -4,8 +4,8 @@
 
 from collections import deque
 
-import rp2
 from machine import Pin
+from rp2 import PIO, StateMachine
 
 from .common import DebugPin, Pulse
 from .pio.rx import FREQUENCY, TIMEOUT_REACHED, count_to_burst_us, count_to_idle_us, pulsereader, pulsereader_debug
@@ -22,27 +22,37 @@ class PulseReceiver:
         self.__sequence = []
         self.__last_pulse = None
 
+        # Check the PIO is valid
+        try:
+            _ = PIO(pio)
+        except ValueError:
+            raise ValueError("pio out of range. Expected 0 or 1 (or 2 if on RP2350)") from None
+
+        # Check the State Machine is valid
+        if sm < 0 or sm > 3:
+            raise ValueError("sm out of range. Expected 0 to 3")
+
         # Set up the pin used to receive pulse signals
         pin = Pin(pin_num, Pin.IN, Pin.PULL_UP)
 
         # For the RP2350, shift the gpio_base of this PIO if the pin is above 32
         base = 16 if pin_num >= 32 else 0
         try:
-            rp2.PIO(pio).gpio_base(base)
+            PIO(pio).gpio_base(base)
         except AttributeError:
             # Handle RP2040 not having the gpio_base function
             pass
 
         # Load either the regular or debug program into the chosen StateMachine
         if debug_pin_base is None:
-            self.__sm = rp2.StateMachine(sm + (pio * 4), pulsereader,
+            self.__sm = StateMachine(sm + (pio * 4), pulsereader,
                                          freq=FREQUENCY, in_base=pin,
                                          jmp_pin=pin)
         else:
             if debug_pin_base < base or debug_pin_base > base + 30:    # 30 because the debug PIO uses two sideset pins
                 raise ValueError(f"'debug_pin_base' is outside the GPIO base of 'pin_num'.\
                                  Choose a 'debug_pin_base' between {base} and {base + 30}") from None
-            self.__sm = rp2.StateMachine(sm + (pio * 4), pulsereader_debug,
+            self.__sm = StateMachine(sm + (pio * 4), pulsereader_debug,
                                          freq=FREQUENCY, in_base=pin,
                                          sideset_base=Pin(debug_pin_base),
                                          jmp_pin=pin)
