@@ -4,7 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aye_arr"
-dynamic = ["version", "readme"]
+version = "1.0.0"
+dynamic = ["readme"]
 authors = [
     { name = "Chris P", email = "chris@pimoroni.com" },
 ]
@@ -15,9 +16,6 @@ description = "Aye Arr: Infrared TX/RX library for RP2040/2350 MicroPython"
 classifiers = [
     "License :: OSI Approved :: MIT License"
 ]
-
-[tool.hatch.version]
-version = "1.0.0"
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
