@@ -1,7 +1,8 @@
-from aye_arr.nec.remotes import PimoroniRemote
-from aye_arr.nec import NECRemoteReceiver
-from aye_arr.logging import LOG_NONE
 import time
+from aye_arr.nec import NECRemoteReceiver
+from aye_arr.nec.remotes import PimoroniRemote
+from aye_arr.logging import LOG_NONE
+
 
 IR_PIN = 12
 

@@ -31,15 +31,16 @@ class Remote(RemoteDescriptor):
     }
 
 
-# Callback function for 
+# Callback function for any command
 def received_any(command):
     print(f"Received 0x{command:02x}")
-    return True
+    return True     # Let the receiver system know we handled this command
 
 
+# Callback function for known buttons only
 def received_known(button):
     print(f"Received `{button}`")
-    return False
+    return True     # Let the receiver system know we handled this button
 
 
 # Create an instance of the remote, and bind the callback functions to each of its buttons

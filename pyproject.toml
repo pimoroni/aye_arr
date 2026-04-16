@@ -30,8 +30,10 @@ include = [
     "aye_arr/*.py",
     "aye_arr/nec/*.py",
     "aye_arr/nec/remotes/*.py",
+    "aye_arr/nec/reference.md",
     "aye_arr/pulse/*.py",
     "aye_arr/pulse/pio/*.py",
+    "aye_arr/pulse/reference.md",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.txt"
