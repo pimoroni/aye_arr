@@ -31,7 +31,7 @@ class PimoroniRemote(RemoteDescriptor):
         "9_COOL": 0x5a,
         "RECORD": 0x42,
         "0_RAINBOW": 0x52,
-        "PLAY/PAUSE": 0x4a
+        "PLAY_PAUSE": 0x4a
     }
 
     NUMBERS = {
