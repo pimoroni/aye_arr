@@ -3,10 +3,11 @@ from aye_arr.nec.remotes import RemoteDescriptor
 
 """
 Listen for infrared commands sent to an address, and act uniquely
-on only the ones we are interested in. The four known commands that
-are received get a separate print-out.
+on only the ones we are interested in. The four known commands
+that are received get passed to a shared function with separate data
+to change their final print-out.
 
-An IR receiver should be connected to the IR_RX_PIN of your board.
+An IR LED (with a suitable resistor) should be connected to the IR_TX_PIN.
 
 Press CTRL+C to exit the program.
 """
@@ -16,24 +17,12 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 ADDRESS = 0x00          # The 8-bit address to listen for commands on
 
 
-# Functions called for each of the remote's buttons
-def up():
-    print("up received")
+# Function called for all button presses
+def received(name):
+    print(f"{name} received")
 
 
-def left():
-    print("left received")
-
-
-def right():
-    print("right received")
-
-
-def down():
-    print("down received")
-
-
-# Create a remote descriptor with a name, our address, and some button codes
+# Create an instance of the remote, and bind the callback functions to each of its buttons
 remote = RemoteDescriptor()
 remote.NAME = "Remote"
 remote.ADDRESS = 0x00
@@ -44,11 +33,14 @@ remote.BUTTON_CODES = {
     "DOWN": 0x15,
 }
 
-# Bind functions to each of the buttons
-remote.bind("UP", up)
-remote.bind("LEFT", left)
-remote.bind("RIGHT", right)
-remote.bind("DOWN", down)
+# Bind the same function to each of the buttons, but with a different parameter.
+# Any number of parameters can be provided within the inner brackets, and they
+# will be passed to the function separately.
+# e.g. `(func, "a", "b", "c")` will go to the function as `def func(a, b, c):`
+remote.bind("UP", (received, "up"))
+remote.bind("LEFT", (received, "left"))
+remote.bind("RIGHT", (received, "right"))
+remote.bind("DOWN", (received, "down"))
 
 # Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
 # Optionally set the logging_level to get more information about what is received.

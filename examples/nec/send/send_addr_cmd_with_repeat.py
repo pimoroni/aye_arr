@@ -3,7 +3,7 @@ import time
 from aye_arr.nec import NECSender
 
 """
-An example of how to send an infrared command to an address, with repeats.
+Send an infrared command to an address, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down.
 These should be sent every 108ms to match the NEC protocol spec.

@@ -2,9 +2,8 @@ from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import RemoteDescriptor
 
 """
-Listen for infrared commands sent to an address, and act uniquely
-on only the ones we are interested in. The four known commands that
-are received get a separate print-out.
+Listen for infrared commands sent to an address, and act on them.
+Any command that is received gets printed out.
 
 An IR receiver should be connected to the IR_RX_PIN of your board.
 
@@ -16,39 +15,17 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 ADDRESS = 0x00          # The 8-bit address to listen for commands on
 
 
-# Functions called for each of the remote's buttons
-def up():
-    print("up received")
+# Function called when a command to our address is received
+def received(command):
+    print(f"Received 0x{command:02x}")
+    return True     # Let the receiver know we handled this command
 
 
-def left():
-    print("left received")
-
-
-def right():
-    print("right received")
-
-
-def down():
-    print("down received")
-
-
-# Create a remote descriptor with a name, our address, and some button codes
+# Create a remote descriptor with a name and our address, and bind the receive function to it
 remote = RemoteDescriptor()
 remote.NAME = "Remote"
-remote.ADDRESS = 0x00
-remote.BUTTON_CODES = {
-    "UP": 0x46,
-    "LEFT": 0x44,
-    "RIGHT": 0x43,
-    "DOWN": 0x15,
-}
-
-# Bind functions to each of the buttons
-remote.bind("UP", up)
-remote.bind("LEFT", left)
-remote.bind("RIGHT", right)
-remote.bind("DOWN", down)
+remote.ADDRESS = ADDRESS
+remote.on_any = received
 
 # Set up an NECRemoteReceiver on the RX pin, using PIO 1 and SM 0.
 # Optionally set the logging_level to get more information about what is received.

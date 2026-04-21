@@ -1,7 +1,8 @@
 from aye_arr.nec import NECReceiver
 
 """
-Listen for infrared codes, and act on them. Any code that is received gets printed out.
+Listen for infrared codes and their repeats, and act on them.
+Any code that is received gets printed out.
 
 An IR receiver should be connected to the IR_RX_PIN of your board.
 
@@ -17,13 +18,18 @@ def received(code):
     print("Received Code 0x{CODE:04x}")
 
 
+# Function called when a repeat code is received
+def repeated(code):
+    print("Repeat Received 0x{CODE:04x}")
+
+
 # Set up a receiver on the RX pin, using PIO 1 and SM 0.
 # Optionally set the logging_level to get more information about what is received.
 # Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
 receiver = NECReceiver(IR_RX_PIN, 1, 0)
 
 # Bind the receive function to the receiver, and turn off listening for repeats
-receive.bind(on_press=received, on_repeat=None)
+receive.bind(on_press=received, on_repeat=repeated)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:

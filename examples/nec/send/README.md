@@ -24,7 +24,7 @@ The chosen code is sent multiple times in bursts, followed by a period of silenc
 ### Send Code With Repeat
 [send_code_with_repeat.py](send_code_with_repeat.py)
 
-An example of how to send an infrared code, with repeats.
+How to send an infrared code, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
 
@@ -32,15 +32,15 @@ Repeats are used by remotes to signal that a button is being held down. These sh
 ### Send Addr Cmd
 [send_addr_cmd.py](send_addr_cmd.py)
 
-An example of how to send an infrared command to an address.
+Send an infrared command to an address.
 
 The chosen command is sent to the address multiple times in bursts, followed by a period of silence. The number of codes per burst, as well as the burst and silence timings can be adjusted.
 
 
 ### Send Addr Cmd With Repeat
-[send_addr_cmd.py](send_addr_cmd_with_repeat.py)
+[send_addr_cmd_with_repeat.py](send_addr_cmd_with_repeat.py)
 
-An example of how to send an infrared command to an address, with repeats.
+Send an infrared command to an address, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
 
@@ -48,15 +48,15 @@ Repeats are used by remotes to signal that a button is being held down. These sh
 ### Send Remote
 [send_remote.py](send_remote.py)
 
-An example of how to send infrared commands as if the board was a remote control.
+Send infrared commands as if the board was a remote control.
 
 The chosen command is sent to the address multiple times in bursts, followed by a period of silence. The number of commands per burst, as well as the burst and silence timings can be adjusted.
 
 
 ### Send Remote With Repeat
-[send_remote.py](send_remote_with_repeat.py)
+[send_remote_with_repeat.py](send_remote_with_repeat.py)
 
-An example of how to send infrared commands as if the board was a remote control, with repeats.
+Send infrared commands as if the board was a remote control, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
 

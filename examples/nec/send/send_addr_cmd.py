@@ -3,7 +3,7 @@ import time
 from aye_arr.nec import NECSender
 
 """
-An example of how to send an infrared command to an address.
+Send an infrared command to an address.
 
 The chosen command is sent to the address multiple times in
 bursts, followed by a period of silence. The number of codes per

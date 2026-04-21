@@ -4,7 +4,7 @@ from aye_arr.nec import NECSender
 from aye_arr.nec.remotes import RemoteDescriptor
 
 """
-An example of how to send infrared commands as if the board was a remote control.
+Send infrared commands as if the board was a remote control.
 
 The chosen command is sent to the address multiple times in bursts,
 followed by a period of silence. The number of commands per burst,
