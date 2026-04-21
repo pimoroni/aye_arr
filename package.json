@@ -7,16 +7,19 @@
   ["aye_arr/nec/common.py", "github:pimoroni/aye_arr/aye_arr/nec/common.py"],
   ["aye_arr/nec/receive.py", "github:pimoroni/aye_arr/aye_arr/nec/receive.py"],
   ["aye_arr/nec/send.py", "github:pimoroni/aye_arr/aye_arr/nec/send.py"],
+  ["aye_arr/nec/reference.md", "github:pimoroni/aye_arr/aye_arr/nec/reference.md"],
 
   ["aye_arr/nec/remotes/__init__.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/__init__.py"],
   ["aye_arr/nec/remotes/argon.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/argon.py"],
   ["aye_arr/nec/remotes/descriptor.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/descriptor.py"],
   ["aye_arr/nec/remotes/argon.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/argon.py"],["aye_arr/nec/remotes/lg.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/lg.py"],
   ["aye_arr/nec/remotes/pimoroni.py", "github:pimoroni/aye_arr/aye_arr/nec/remotes/pimoroni.py"],
+  ["aye_arr/nec/remotes/reference.md", "github:pimoroni/aye_arr/aye_arr/nec/remotes/reference.md"],
 
   ["aye_arr/pulse/common.py", "github:pimoroni/aye_arr/aye_arr/pulse/common.py"],
   ["aye_arr/pulse/receive.py", "github:pimoroni/aye_arr/aye_arr/pulse/receive.py"],
   ["aye_arr/pulse/send.py", "github:pimoroni/aye_arr/aye_arr/pulse/send.py"],
+  ["aye_arr/pulse/reference.md", "github:pimoroni/aye_arr/aye_arr/pulse/reference.md"],
 
   ["aye_arr/pulse/pio/rx.py", "github:pimoroni/aye_arr/aye_arr/pulse/pio/rx.py"],
   ["aye_arr/pulse/pio/tx.py", "github:pimoroni/aye_arr/aye_arr/pulse/pio/tx.py"]

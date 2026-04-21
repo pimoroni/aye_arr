@@ -9,7 +9,7 @@ from machine import Pin
 import aye_arr.logging as logging
 
 from ..pulse.common import DebugPin
-from ..pulse.receive import DEFAULT_FILTER_THRESHOLD, PulseReceiver
+from ..pulse.receive import DEFAULT_FILTER_THRESHOLD_US, PulseReceiver
 from .common import NEC_DATA_BURST_US, NEC_DATA_ONE_US, NEC_DATA_ZERO_US, NEC_REPEAT, NEC_REPEAT_TIMEOUT_MS, NEC_START_BURST_US, NEC_START_DATA_US, NEC_START_REPEAT_US, pulse_us_valid
 from .remotes import KNOWN_REMOTES
 
@@ -123,7 +123,7 @@ class NECReceiver(PulseReceiver):
         self.__check_repeat_timeout()
         super().decode_no_filter()
 
-    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD):   # with filter
+    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD_US):   # with filter
         self.__check_repeat_timeout()
         super().decode(filter_threshold)
 

@@ -12,7 +12,7 @@ from .pio.rx import FREQUENCY, TIMEOUT_REACHED, count_to_burst_us, count_to_idle
 
 # Constants
 MAX_BUFFER = const(1024)
-DEFAULT_FILTER_THRESHOLD = const(200)
+DEFAULT_FILTER_THRESHOLD_US = const(200)
 
 
 class PulseReceiver:
@@ -115,7 +115,7 @@ class PulseReceiver:
                           count_to_idle_us(count_pair & 0xffff))
             self.__sequence.append(pulse)
 
-    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD):   # with filter
+    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD_US):   # with filter
         """
         Checks for any newly received pulses since the last time `decode` was
         called. Once a sufficient number of pulses has been received, as

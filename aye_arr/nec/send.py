@@ -9,8 +9,8 @@ from .common import NEC_DATA_BURST_US, NEC_DATA_LOCKOUT_US, NEC_DATA_ONE_US, NEC
 
 
 class NECSender(PulseSender):
-    def __init__(self, pin_num, pio, sm, debug_burst_pin=None,
-                 debug_send_pin=None, debug_wait_pin=None,
+    def __init__(self, pin_num, pio, sm,
+                 debug_burst_pin=None, debug_send_pin=None, debug_wait_pin=None,
                  logging_level=logging.LOG_WARN):
         logging.level = logging_level
         super().__init__(pin_num, pio, sm, NEC_FREQUENCY,
@@ -61,8 +61,6 @@ class NECSender(PulseSender):
         super().wait_for_send()
 
     def send_repeat(self):
-        # TODO test this actually works
-
         # Send the starting condition
         super().send(NEC_START_BURST_US, NEC_START_REPEAT_US)
 
