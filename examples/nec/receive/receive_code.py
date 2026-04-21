@@ -23,7 +23,7 @@ def received(code):
 receiver = NECReceiver(IR_RX_PIN, 1, 0)
 
 # Bind the receive function to the receiver, and turn off listening for repeats
-receive.bind(on_press=received, on_repeat=None)
+receiver.bind(on_press=received, on_repeat=None)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:

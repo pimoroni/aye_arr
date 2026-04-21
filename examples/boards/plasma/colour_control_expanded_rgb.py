@@ -1,8 +1,8 @@
 import json
 import time
 
-import plasma
 from machine import Pin
+from plasma import COLOR_ORDER_BGR, WS2812
 
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
@@ -24,13 +24,14 @@ Reduce all channels to zero
 
 """
 
-
-class State:
-    OFF = 0
-    ON = 1
-
-
-state = State.ON
+# Constants
+IR_RX_PIN = 20          # The pin to listen for IR pulses on
+NUM_LEDS = 66           # The number of LEDs on the strip
+UPDATES = 50            # How many times to update the strip and effects per second
+TIMESTEP = 1 / UPDATES  # The time in seconds between each update
+STARTING_SPEED = 0.1    # The speed the effects will animate at initially
+SPEED_MULT = 1.1        # The amount to multiply or divide the effects speed by each button press
+COLOUR_STEP = 10        # The amount that a colour component will change by with each press / repeat
 
 # Color constants
 RED = 255, 0, 0
@@ -44,40 +45,32 @@ WHITE = 255, 255, 255
 COOL_WHITE = 96, 192, 255
 BLACK = 0, 0, 0
 
-# Constants
-NUM_LEDS = 68        # How many LEDs are on the connected Strip
-UPDATES = 50        # How many times the LEDs and effects updated per second
-INV_UPDATES = 1 / UPDATES
-SPEED_MULT = 1.1
-
-
-speed = 0.1        # The speed to cycle the rainbow at, with 1.0 being 1 second
-
-
-# Colour Values
-rgb = [100, 100, 100]
-increment = 10
-
 
 # Variables
-boot = Pin.board.BUTTON_A
-boot.init(Pin.IN, Pin.PULL_UP)
-
-# WS2812 / NeoPixel™ LEDs
-strip = plasma.WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
-                      color_order=plasma.COLOR_ORDER_BGR)
-
+state = True
+speed = STARTING_SPEED
+rgb = [100, 100, 100]
 changed = True
 offset = 0.0
 
+# Setup Plasma 2350's "A" button
+boot = Pin.board.BUTTON_A
+boot.init(Pin.IN, Pin.PULL_UP)
 
+# Setup the RGB LED strip
+strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
+               color_order=COLOR_ORDER_BGR)
+
+
+# Save the latest colour and speed to file
 def save():
     with open('last_colour.json', 'w') as file:
         json.dump((rgb, speed), file)
 
 
+# Load the last colour and speed from file
 def load():
-    global rgb
+    global rgb, speed
     try:
         with open('last_colour.json', 'r') as file:
             rgb, speed = json.load(file)
@@ -85,34 +78,25 @@ def load():
         pass
 
 
+# Toggle the LED strip on or off
 def toggle_state():
     global state, changed
     state = not state
     changed = True
 
 
+# Set the LED strip colour, and turn it on
 def set_preset(color):
     global rgb, changed, state
     rgb = [c for c in color]
-    state = State.ON
+    state = True
     changed = True
 
 
-def update_red(value):
+# Increase or decrease
+def update_component(value, index):
     global rgb, changed
-    rgb[0] = max(min(rgb[0] + value, 255), 0)
-    changed = True
-
-
-def update_green(value):
-    global rgb, changed
-    rgb[1] = max(min(rgb[1] + value, 255), 0)
-    changed = True
-
-
-def update_blue(value):
-    global rgb, changed
-    rgb[2] = max(min(rgb[2] + value, 255), 0)
+    rgb[index] = max(min(rgb[index] + value, 255), 0)
     changed = True
 
 
@@ -125,19 +109,19 @@ def update_speed(value):
 def rainbow():
     global rgb, changed, state
     rgb = [-1, -1, -1]
-    state = State.ON
+    state = True
     changed = True
 
 
 def update():
     global offset
-    if state == State.ON:
+    if state:
         if -1 in rgb:
             for led in range(NUM_LEDS):
                 hue = float(led) / NUM_LEDS
                 strip.set_hsv(led, hue + offset, 1.0, 1.0)
 
-            offset = (offset + (speed * INV_UPDATES)) % 1.0
+            offset = (offset + (speed * TIMESTEP)) % 1.0
         else:
             for led in range(NUM_LEDS):
                 strip.set_rgb(led, *rgb)
@@ -146,26 +130,27 @@ def update():
             strip.set_rgb(led, *BLACK)
 
 
-# Create the remote and setup up what each of our buttons will do.
+# Create the remote and setup up what each of our buttons will do
 remote = PimoroniRemote()
 remote.bind("LEFT", (update_speed, 1 / SPEED_MULT))
 remote.bind("RIGHT", (update_speed, SPEED_MULT))
-remote.bind("1_RED", on_press=None, on_short=(set_preset, RED), on_repeat=(update_red, increment))
-remote.bind("4_CYAN", on_press=None, on_short=(set_preset, CYAN), on_repeat=(update_red, -increment))
-remote.bind("2_GREEN", on_press=None, on_short=(set_preset, GREEN), on_repeat=(update_green, increment))
-remote.bind("5_MAGENTA", on_press=None, on_short=(set_preset, MAGENTA), on_repeat=(update_green, -increment))
-remote.bind("3_BLUE", on_press=None, on_short=(set_preset, BLUE), on_repeat=(update_blue, increment))
-remote.bind("6_YELLOW", on_press=None, on_short=(set_preset, YELLOW), on_repeat=(update_blue, -increment))
-remote.bind("7_WARM", (set_preset, WARM_WHITE))
-remote.bind("8_WHITE", (set_preset, WHITE))
-remote.bind("9_COOL", (set_preset, COOL_WHITE))
-remote.bind("OK_STOP", on_press=None, on_short=toggle_state)
-remote.bind("0_RAINBOW", rainbow)
+remote.bind("1_RED", on_press=None, on_short=(set_preset, RED), on_repeat=(update_component, COLOUR_STEP, 0))
+remote.bind("4_CYAN", on_press=None, on_short=(set_preset, CYAN), on_repeat=(update_component, -COLOUR_STEP, 0))
+remote.bind("2_GREEN", on_press=None, on_short=(set_preset, GREEN), on_repeat=(update_component, COLOUR_STEP, 1))
+remote.bind("5_MAGENTA", on_press=None, on_short=(set_preset, MAGENTA), on_repeat=(update_component, -COLOUR_STEP, 1))
+remote.bind("3_BLUE", on_press=None, on_short=(set_preset, BLUE), on_repeat=(update_component, COLOUR_STEP, 2))
+remote.bind("6_YELLOW", on_press=None, on_short=(set_preset, YELLOW), on_repeat=(update_component, -COLOUR_STEP, 2))
+remote.bind("7_WARM", (set_preset, WARM_WHITE), on_repeat=None)
+remote.bind("8_WHITE", (set_preset, WHITE), on_repeat=None)
+remote.bind("9_COOL", (set_preset, COOL_WHITE), on_repeat=None)
+remote.bind("OK_STOP", toggle_state, on_repeat=None)
+remote.bind("0_RAINBOW", rainbow, on_repeat=None)
 
-receiver = NECRemoteReceiver(20, 1, 0)
+# Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
-# Attempt to load the last colour used
+# Attempt to load the last colour and speed used
 load()
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
@@ -173,19 +158,21 @@ try:
     strip.start(UPDATES)    # Start updating the LED strip
     receiver.start()
 
-    # Loop until the effect stops or the "Boot" button is pressed
+    # Loop until the "A" button is pressed
     while boot.value():
-        receiver.decode()   # Add exception if this is called but start hasn't been called, or is in a stopped state
+        # Decode any IR pulses received since the last time this was called.
+        receiver.decode()
 
+        # Save the latest colour and speed if there has been a change
         if changed:
             save()
             changed = False
 
         update()   # Always update, for animations
-        time.sleep(INV_UPDATES)
+        time.sleep(TIMESTEP)
 
-# Stop any running effects and turn off the LED strip
+# End the program by stopping any active systems
 finally:
     receiver.stop()
     strip.clear()
-    time.sleep(0.1)
+    time.sleep(0.1)     # Short delay for the clear to take effect

@@ -76,9 +76,9 @@ ignore = [
     'examples/nec/*',
     'examples/nec/receive/*',
     'examples/nec/send/*',
-    'examples/motor_shim/*',
-    'examples/plasma/*',
-    'examples/tiny_2350/*',
+    'examples/boards/motor_shim/*',
+    'examples/boards/plasma/*',
+    'examples/boards/tiny_2350/*',
     'tools/*',
     'requirements-dev.txt',
     'package.json'
