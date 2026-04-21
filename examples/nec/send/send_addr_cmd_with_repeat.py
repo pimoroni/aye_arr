@@ -30,13 +30,14 @@ try:
 
     # Loop forever
     while True:
-        # Send the intended address and command several times to help it be detected
+        # Send the intended command to the address once per loop
         print(f"Sending Addr 0x{ADDRESS:02x}, Cmd 0x{COMMAND:02x}")
+        sender.send_addr_cmd(ADDRESS, COMMAND)
 
-        # Send repeats rather than resending the code
+        # Send repeats rather than resending the command
         for i in range(REPEATS):
-            print("Sending Repeat")
             time.sleep(REPEAT_DELAY)
+            print("Sending Repeat")
             sender.send_repeat()
 
         # Have a period of silence between each burst

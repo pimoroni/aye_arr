@@ -35,8 +35,8 @@ try:
 
         # Send repeats rather than resending the code
         for i in range(REPEATS):
-            print("Sending Repeat")
             time.sleep(REPEAT_DELAY)
+            print("Sending Repeat")
             sender.send_repeat()
 
         # Have a period of silence between each send

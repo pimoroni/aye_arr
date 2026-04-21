@@ -5,7 +5,7 @@ from aye_arr.nec import NECSender
 """
 An example of how to send an infrared command to an address.
 
-In it the chosen command is sent to the address multiple times in
+The chosen command is sent to the address multiple times in
 bursts, followed by a period of silence. The number of codes per
 burst, as well as the burst and silence timings can be adjusted.
 
@@ -31,7 +31,7 @@ try:
 
     # Loop forever
     while True:
-        # Send the intended address and command several times to help it be detected
+        # Send the intended command to the address several times to help it be detected
         print(f"Sending Addr 0x{ADDRESS:02x}, Cmd 0x{COMMAND:02x} {BURSTS}x times")
         for i in range(BURSTS):
             sender.send_addr_cmd(ADDRESS, COMMAND)
