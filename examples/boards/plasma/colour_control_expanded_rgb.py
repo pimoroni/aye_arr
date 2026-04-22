@@ -4,6 +4,7 @@ import time
 from machine import Pin
 from plasma import COLOR_ORDER_BGR, WS2812
 
+import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -86,9 +87,10 @@ def toggle_state():
 
 
 # Set the LED strip colour, and turn it on
-def set_preset(color):
+def set_preset(colour):
     global rgb, changed, state
-    rgb = [c for c in color]
+    rgb = [c for c in colour]
+    print(f"Colour = #{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}")
     state = True
     changed = True
 
@@ -97,18 +99,21 @@ def set_preset(color):
 def update_component(value, index):
     global rgb, changed
     rgb[index] = max(min(rgb[index] + value, 255), 0)
+    print(f"Colour = #{rgb[0]:02x}{rgb[1]:02x}{rgb[2]:02x}")
     changed = True
 
 
 def update_speed(value):
     global speed, changed
     speed = max(min(speed * value, 10), 0.01)
+    print(f"Speed = {speed:.3}")
     changed = True
 
 
 def rainbow():
     global rgb, changed, state
     rgb = [-1, -1, -1]
+    print("Rainbow Effect")
     state = True
     changed = True
 
@@ -147,7 +152,9 @@ remote.bind("OK_STOP", toggle_state, on_repeat=None)
 remote.bind("0_RAINBOW", rainbow, on_repeat=None)
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
+# The logging level can be increased to get more information about what is received.
+# Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
 receiver.bind(remote)
 
 # Attempt to load the last colour and speed used

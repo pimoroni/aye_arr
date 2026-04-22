@@ -14,7 +14,7 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 
 # Function called when a code is received
 def received(code):
-    print("Received Code 0x{CODE:04x}")
+    print(f"Received Code 0x{code:04x}")
 
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0.

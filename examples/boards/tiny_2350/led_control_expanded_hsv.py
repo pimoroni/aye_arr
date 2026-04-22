@@ -1,5 +1,6 @@
 from pimoroni import RGBLED
 
+import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -18,9 +19,9 @@ Press CTRL+C to exit the program.
 IR_RX_PIN = 12          # The pin to listen for IR pulses on
 LED_PINS = 18, 19, 20   # The pins for controlling a RGB LED
 
-HUE_STEP = 0.1          # The amount that hue will change by with each press / repeat
-SAT_STEP = 0.1          # The amount that saturation will change by with each press / repeat
-VAL_STEP = 0.1          # The amount that value will change by with each press / repeat
+HUE_STEP = 0.01         # The amount that hue will change by with each press / repeat
+SAT_STEP = 0.01         # The amount that saturation will change by with each press / repeat
+VAL_STEP = 0.05         # The amount that value will change by with each press / repeat
 
 # Colour constants (in HSV)
 RED = 0 / 6, 1, 1
@@ -123,7 +124,9 @@ remote.bind("UP", (adjust_val, VAL_STEP))
 remote.bind("DOWN", (adjust_val, -VAL_STEP))
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
+# The logging level can be increased to get more information about what is received.
+# Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

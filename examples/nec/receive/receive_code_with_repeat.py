@@ -15,12 +15,17 @@ IR_RX_PIN = 26          # The pin to listen for IR pulses on
 
 # Function called when a code is received
 def received(code):
-    print("Received Code 0x{CODE:04x}")
+    print(f"Received Code 0x{code:04x}")
 
 
 # Function called when a repeat code is received
 def repeated(code):
-    print("Repeat Received 0x{CODE:04x}")
+    print(f" - Repeated Code 0x{code:04x}")
+
+
+# Function called when a repeat code is received
+def released(code):
+    print(f"Released Code 0x{code:04x}")
 
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0.
@@ -28,8 +33,8 @@ def repeated(code):
 # Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
 receiver = NECReceiver(IR_RX_PIN, 1, 0)
 
-# Bind the receive function to the receiver, and turn off listening for repeats
-receiver.bind(on_press=received, on_repeat=repeated)
+# Bind the receive functions to the receiver
+receiver.bind(on_press=received, on_repeat=repeated, on_release=released)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:

@@ -3,12 +3,13 @@ import time
 from machine import Pin
 from plasma import COLOR_ORDER_BGR, WS2812
 
+import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 # Constants
 IR_RX_PIN = 20          # The pin to listen for IR pulses on
-NUM_LEDS = 50           # The number of LEDs on the strip
+NUM_LEDS = 66           # The number of LEDs on the strip
 
 # Color constants
 RED = 255, 0, 0
@@ -48,7 +49,9 @@ remote.bind("9_COOL", (set_strip, COOL))
 remote.bind("OK_STOP", (set_strip, BLACK))
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
+# The logging level can be increased to get more information about what is received.
+# Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
