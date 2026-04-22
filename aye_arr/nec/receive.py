@@ -10,7 +10,9 @@ import aye_arr.logging as logging
 
 from ..pulse.common import DebugPin
 from ..pulse.receive import DEFAULT_FILTER_THRESHOLD_US, PulseReceiver
-from .common import NEC_DATA_BURST_US, NEC_DATA_ONE_US, NEC_DATA_ZERO_US, NEC_REPEAT, NEC_REPEAT_TIMEOUT_MS, NEC_START_BURST_US, NEC_START_DATA_US, NEC_START_REPEAT_US, pulse_us_valid
+from .common import NEC_DATA_BURST_US, NEC_DATA_ONE_US, NEC_DATA_ZERO_US, \
+     NEC_NONE, NEC_REPEAT, NEC_REPEAT_TIMEOUT_MS, NEC_START_BURST_US, \
+     NEC_START_DATA_US, NEC_START_REPEAT_US, pulse_us_valid
 from .remotes import KNOWN_REMOTES
 
 
@@ -38,7 +40,7 @@ class NECReceiver(PulseReceiver):
     def __init__(self, pin_num, pio, sm,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
                  logging_level=logging.LOG_WARN):
-        self.__last_code = NEC_REPEAT
+        self.__last_code = NEC_NONE
         self.__received_ms = time.ticks_ms()
         self.__last_code_ms = self.__received_ms
 
@@ -66,7 +68,7 @@ class NECReceiver(PulseReceiver):
         logging.warn("--- IR receiver stopped ---")
 
     def reset(self):
-        self.__last_code = NEC_REPEAT
+        self.__last_code = NEC_NONE
         self.__received_ms = time.ticks_ms()
         self.__last_code_ms = self.__received_ms
         super().reset()
@@ -131,13 +133,13 @@ class NECReceiver(PulseReceiver):
         # Expire our last code if it was received too long ago and isn't a repeat
         current_ms = time.ticks_ms()
         if time.ticks_diff(current_ms, self.__received_ms) > NEC_REPEAT_TIMEOUT_MS and \
-           self.__last_code != NEC_REPEAT:
+           self.__last_code >= 0:
             logging.info(f"Last code 0x{self.__last_code:08x} expired")
 
             # Perform the general release action for the last code, if any
             self.__on_release(self.__last_code, current_ms, self.__last_code_ms)
 
-            self.__last_code = NEC_REPEAT
+            self.__last_code = NEC_NONE
 
     def __analyse(self, pulses):
         # Attempt to extract a code from the received pulses
@@ -157,7 +159,8 @@ class NECReceiver(PulseReceiver):
                 self.__on_repeat(self.__last_code, self.__received_ms, self.__last_code_ms)
                 return
 
-            self.__on_release(self.__last_code, self.__received_ms, self.__last_code_ms)
+            if self.__last_code != NEC_NONE:
+                self.__on_release(self.__last_code, self.__received_ms, self.__last_code_ms)
 
             logging.info(f"Code received, 0x{code:08x}")
 
