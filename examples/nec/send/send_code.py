@@ -3,7 +3,7 @@ import time
 from aye_arr.nec import NECSender
 
 """
-A barebones example of how to send an infrared code.
+A barebones example of how to send a NEC infrared code.
 
 The chosen code is sent multiple times in bursts, followed by a period of silence.
 The number of codes per burst, as well as the burst and silence timings can be adjusted.

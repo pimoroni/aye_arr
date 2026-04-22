@@ -77,6 +77,7 @@ ignore = [
     'examples/*',
     'examples/nec/*',
     'examples/nec/receive/*',
+    'examples/nec/receive/remote/*',
     'examples/nec/send/*',
     'examples/boards/motor_shim/*',
     'examples/boards/plasma/*',

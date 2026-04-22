@@ -1,4 +1,4 @@
-# Aye Arr - NEC Sending - Micropython Examples <!-- omit in toc -->
+# Aye Arr - NEC Send - MicroPython Examples <!-- omit in toc -->
 
 These are micropython examples for using Aye Arr with the NEC protocol to send infrared signals.
 
@@ -16,7 +16,7 @@ These are micropython examples for using Aye Arr with the NEC protocol to send i
 ### Send Code
 [send_code.py](send_code.py)
 
-A barebones example of how to send an infrared code.
+A barebones example of how to send a NEC infrared code.
 
 The chosen code is sent multiple times in bursts, followed by a period of silence. The number of codes per burst, as well as the burst and silence timings can be adjusted.
 
@@ -24,7 +24,7 @@ The chosen code is sent multiple times in bursts, followed by a period of silenc
 ### Send Code With Repeat
 [send_code_with_repeat.py](send_code_with_repeat.py)
 
-How to send an infrared code, with repeats.
+How to send a NEC infrared code, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
 
@@ -32,7 +32,7 @@ Repeats are used by remotes to signal that a button is being held down. These sh
 ### Send Addr Cmd
 [send_addr_cmd.py](send_addr_cmd.py)
 
-Send an infrared command to an address.
+Send a NEC infrared command to an address.
 
 The chosen command is sent to the address multiple times in bursts, followed by a period of silence. The number of codes per burst, as well as the burst and silence timings can be adjusted.
 
@@ -40,7 +40,7 @@ The chosen command is sent to the address multiple times in bursts, followed by 
 ### Send Addr Cmd With Repeat
 [send_addr_cmd_with_repeat.py](send_addr_cmd_with_repeat.py)
 
-Send an infrared command to an address, with repeats.
+Send a NEC infrared command to an address, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
 
@@ -48,7 +48,7 @@ Repeats are used by remotes to signal that a button is being held down. These sh
 ### Send Remote
 [send_remote.py](send_remote.py)
 
-Send infrared commands as if the board was a remote control.
+Send NEC infrared commands as if the board was a remote control.
 
 The chosen command is sent to the address multiple times in bursts, followed by a period of silence. The number of commands per burst, as well as the burst and silence timings can be adjusted.
 
@@ -56,7 +56,6 @@ The chosen command is sent to the address multiple times in bursts, followed by 
 ### Send Remote With Repeat
 [send_remote_with_repeat.py](send_remote_with_repeat.py)
 
-Send infrared commands as if the board was a remote control, with repeats.
+Send NEC infrared commands as if the board was a remote control, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down. These should be sent every 108ms to match the NEC protocol spec.
-

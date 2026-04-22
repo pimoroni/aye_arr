@@ -8,6 +8,10 @@ from aye_arr.nec.remotes import PimoroniRemote
 Set the colour of Tiny 2350's onboard RGB LED using the
 number buttons on the Pimoroni Aye Arr Remote.
 
+Actions:
+- (1)-(9) Buttons [Press + Hold] = Set Colour
+- OK Button [Press + Hold] = Set Black
+
 An IR receiver should be connected to the IR_RX_PIN of your board.
 E.g. an IR Stick connected to the 3V, GND, and SDA of Tiny's Qw/ST port.
 

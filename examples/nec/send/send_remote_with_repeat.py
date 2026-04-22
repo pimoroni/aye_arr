@@ -4,7 +4,7 @@ from aye_arr.nec import NECSender
 from aye_arr.nec.remotes import RemoteDescriptor
 
 """
-Send infrared commands as if the board was a remote control, with repeats.
+Send NEC infrared commands as if the board was a remote control, with repeats.
 
 Repeats are used by remotes to signal that a button is being held down.
 These should be sent every 108ms to match the NEC protocol spec.

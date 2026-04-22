@@ -2,7 +2,7 @@ import aye_arr.logging as logging
 from aye_arr.nec import NECReceiver
 
 """
-An example of how to listen for infrared codes.
+An example of how to listen for any NEC infrared signals.
 
 An IR receiver should be connected to the IR_RX_PIN of your board.
 

@@ -2,7 +2,7 @@ from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import RemoteDescriptor
 
 """
-Listen for infrared commands sent to an address, and act on them.
+Listen for NEC infrared commands sent to an address, and act on them.
 Any command that is received gets printed out.
 
 An IR receiver should be connected to the IR_RX_PIN of your board.

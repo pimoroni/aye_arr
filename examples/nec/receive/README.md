@@ -1,55 +1,89 @@
-# Aye Arr - NEC Receiving - Micropython Examples <!-- omit in toc -->
+# Aye Arr - NEC Receive - MicroPython Examples <!-- omit in toc -->
 
 These are micropython examples for using Aye Arr with the NEC protocol to receive infrared signals.
 
 - [Examples](#examples)
-  - [Send Code](#send-code)
-  - [Send Code With Repeat](#send-code-with-repeat)
-  - [Send Addr Cmd](#send-addr-cmd)
-  - [Send Addr Cmd With Repeat](#send-addr-cmd-with-repeat)
-  - [Send Remote](#send-remote)
-  - [Send Remote With Repeat](#send-remote-with-repeat)
+  - [Listen](#listen)
+  - [Receive Code](#receive-code)
+  - [Receive Code with Repeat](#receive-code-with-repeat)
+  - [Receive Address \& Command](#receive-address--command)
+  - [Receive Known Address \& Command](#receive-known-address--command)
+- [Remote Examples](#remote-examples)
+  - [Individual Callbacks](#individual-callbacks)
+  - [Shared Callbacks](#shared-callbacks)
+  - [Variable Adjustment](#variable-adjustment)
+  - [Number Entering](#number-entering)
+  - [Binding Options](#binding-options)
+  - [Binding Timings](#binding-timings)
 
 
 ## Examples
 
-### Receive Listen
+### Listen
 [receive_listen.py](receive_listen.py)
 
-An example of how to listen for infrared codes.
+An example of how to listen for any NEC infrared signals.
 
 
 ### Receive Code
 [receive_code.py](receive_code.py)
 
-Listen for infrared codes, and act on them. Any code that is received gets printed out.
+Listen for NEC infrared codes, and act on them. Any code that is received gets printed out.
 
 
 ### Receive Code with Repeat
 [receive_code_with_repeat.py](receive_code_with_repeat.py)
 
-Listen for infrared codes and their repeats, and act on them. Any code that is received gets printed out.
+Listen for NEC infrared codes and their repeats, and act on them. Any code that is received gets printed out.
 
 
-### Receive Addr Cmd
+### Receive Address & Command
 [receive_add_cmd.py](receive_addr_cmd.py)
 
-Listen for infrared commands sent to an address, and act on them. Any command that is received gets printed out.
+Listen for NEC infrared commands sent to an address, and act on them. Any command that is received gets printed out.
 
 
-### Receive Addr Cmd Known
+### Receive Known Address & Command
 [receive_addr_cmd_known.py](receive_addr_cmd_known.py)
 
-Listen for infrared commands sent to an address, and act on only ones we are interested in. The four known commands that are received get printed out.
+Listen for NEC infrared commands sent to an address, and act on only ones we are interested in. The four bound commands that are received get printed out.
 
 
-### Receive Remote
-[receive_remote.py](receive_remote.py)
+## Remote Examples
 
-Listen for infrared commands sent to an address, and act uniquely on only the ones we are interested in. The four known commands that are received get a separate print-out.
+### Individual Callbacks
+[remote/individual_callbacks.py](remote/individual_callbacks.py)
+
+Listen for NEC infrared commands sent from a Pimoroni remote, and perform individual actions for the ones we are interested in, via separate functions.
 
 
-### Receive Remote Shared
-[receive_remote_shared.py](receive_remote_shared.py)
+### Shared Callbacks
+[remote/shared_callbacks.py](remote/shared_callbacks.py)
 
-Listen for infrared commands sent to an address, and act uniquely on only the ones we are interested in. The four known commands that are received get passed to a shared function with separate data to change their final print-out.
+Listen for NEC infrared commands sent from a Pimoroni remote, and perform actions for the ones we are interested in, via a shared function with separate data.
+
+
+### Variable Adjustment
+[remote/variable_adjust.py](remote/variable_adjust.py)
+
+Listen for NEC infrared commands sent from a Pimoroni remote, and use them to change the values of local "volume" and "brightness" variables.
+
+
+### Number Entering
+[remote/number_entering.py](remote/number_entering.py)
+
+Listen for NEC infrared commands sent from a Pimoroni remote, and use them to enter a "channel" number into the system. Each number button on the remote adds a digit to the current number.
+
+
+### Binding Options
+[remote/binding_options.py](remote/binding_options.py)
+
+Listen for NEC infrared commands sent from a Pimoroni remote, and show how
+different actions can be used to each button behave differently.
+
+
+### Binding Timings
+[remote/binding_timings.py](remote/binding_timings.py)
+
+Listen for NEC infrared commands sent from a Pimoroni remote, and have a single
+button perform different actions, including timing information.

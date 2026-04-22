@@ -9,6 +9,17 @@ Set the colour of Tiny 2350's onboard RGB LED using the number buttons
 on the Pimoroni Aye Arr Remote, and change it using the directional buttons.
 This version makes use of HSV to allow for changing of colours.
 
+Actions:
+- (1)-(6) Button [Press + Hold] = Set Colour
+- (8) Button [Press + Hold] = Set White
+- OK_STOP Button [Press + Hold] = Set Black
+- UP Button [Press + Hold] = Increase Value
+- DOWN Button [Press + Hold] = Decrease Value
+- LEFT Button [Press + Hold] = Decrease Saturation
+- RIGHT Button [Press + Hold] = Increase Saturation
+- ANTICLOCK Button [Press + Hold] = Decrease Hue
+- CLOCKWISE Button [Press + Hold] = Increase Hue
+
 An IR receiver should be connected to the IR_RX_PIN of your board.
 E.g. an IR Stick connected to the 3V, GND, and SDA of Tiny's Qw/ST port.
 

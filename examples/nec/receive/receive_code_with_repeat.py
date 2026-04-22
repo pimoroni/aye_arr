@@ -1,7 +1,7 @@
 from aye_arr.nec import NECReceiver
 
 """
-Listen for infrared codes and their repeats, and act on them.
+Listen for NEC infrared codes and their repeats, and act on them.
 Any code that is received gets printed out.
 
 An IR receiver should be connected to the IR_RX_PIN of your board.

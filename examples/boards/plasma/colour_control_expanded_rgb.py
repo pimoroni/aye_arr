@@ -12,17 +12,26 @@ from aye_arr.nec.remotes import PimoroniRemote
 An example for the Plasma2350 and IR Stick (Connected to the QW/sT).
 Buttons:
 
-Long Press/Hold:
-1-4 = Increase/Decrease the Red channel
-2-5 = Increase/Decrease the Green channel
-3-6 = Increase/Decrease the Blue channel
+Actions:
+- LEFT Button [Press + Hold] = Decrease Speed
+- RIGHT Button [Press + Hold] = Increase Speed
+- (0)-(6) Buttons [Short Press] = Set Colour
+- (7) Button [Press] = Set Warm White
+- (8) Button [Press] = Set White
+- (9) Button [Press] = Set Cool White
+- (0) Button [Press] = Set Rainbow
+- (1) Button [Hold] = Increase Red
+- (4) Button [Hold] = Decrease Red
+- (2) Button [Hold] = Increase Green
+- (5) Button [Hold] = Decrease Green
+- (3) Button [Hold] = Increase Blue
+- (6) Button [Hold] = Decrease Blue
+- OK_STOP Button [Press] = Toggle On/Off
 
-Short Press (numpad):
-Sets the LEDs to the colour shown on the remote.
+An IR receiver should be connected to the IR_RX_PIN of your board.
+E.g. an IR Stick connected to the 3V, GND, and SDA of Plasma's Qw/ST port.
 
-OK/Stop:
-Reduce all channels to zero
-
+Press CTRL+C to exit the program.
 """
 
 # Constants
@@ -148,8 +157,8 @@ remote.bind("6_YELLOW", on_press=None, on_short=(set_preset, YELLOW), on_repeat=
 remote.bind("7_WARM", (set_preset, WARM_WHITE), on_repeat=None)
 remote.bind("8_WHITE", (set_preset, WHITE), on_repeat=None)
 remote.bind("9_COOL", (set_preset, COOL_WHITE), on_repeat=None)
-remote.bind("OK_STOP", toggle_state, on_repeat=None)
 remote.bind("0_RAINBOW", rainbow, on_repeat=None)
+remote.bind("OK_STOP", toggle_state, on_repeat=None)
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
 # The logging level can be increased to get more information about what is received.
