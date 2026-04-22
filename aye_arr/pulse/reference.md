@@ -35,7 +35,7 @@ wait_for_send() -> None
 
 ### Constants
 
-`DEFAULT_FILTER_THRESHOLD_US` = `200`  
+`DEFAULT_FILTER_THRESHOLD_US` = `200`
 
 ### Functions
 

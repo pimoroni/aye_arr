@@ -4,7 +4,7 @@ Aye Arr is a Micropython library for sending and receiving infrared remote signa
 
 ## Table of Content <!-- omit in toc -->
 
-It can be used at a base level to send arbitary IR signals, up to emulating specific remotes.
+It can be used at a base level to send arbitrary IR signals, up to emulating specific remotes.
 
 
 
