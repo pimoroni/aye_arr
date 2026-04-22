@@ -11,6 +11,7 @@ Here are a number of demos of the Aye Arr library controlling the hardware featu
 * [Pico Motor Shim](boards/motor_shim)
 * [Plasma 2350](boards/plasma)
 * [Tiny 2350](boards/tiny_2350)
+* [Tiny FX](boards/tiny_fx)
 
 ## NEC Examples
 

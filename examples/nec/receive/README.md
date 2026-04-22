@@ -38,7 +38,7 @@ Listen for NEC infrared codes and their repeats, and act on them. Any code that 
 
 
 ### Receive Address & Command
-[receive_add_cmd.py](receive_addr_cmd.py)
+[receive_addr_cmd.py](receive_addr_cmd.py)
 
 Listen for NEC infrared commands sent to an address, and act on them. Any command that is received gets printed out.
 
