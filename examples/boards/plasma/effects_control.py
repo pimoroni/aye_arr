@@ -24,7 +24,6 @@ Press CTRL+C to exit the program.
 IR_RX_PIN = 20          # The pin to listen for IR pulses on
 NUM_LEDS = 66           # The number of LEDs on the strip
 UPDATES = 50            # How many times to update the strip and effects per second
-TIMESTEP = 1 / UPDATES  # The time in seconds between each update
 
 HUE_STEP = 0.01         # The amount that hue will change by with each press / repeat
 SAT_STEP = 0.01         # The amount that saturation will change by with each press / repeat
@@ -35,6 +34,7 @@ hue = 1.0
 sat = 1.0
 val = 1.0
 blink_on = False
+last_update = None
 
 # Setup the RGB LED strip, using PIO 0 and SM 0
 strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
@@ -43,6 +43,7 @@ strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
 
 # TODO
 def pulse():
+    global last_update
     p = abs(math.cos(time.ticks_ms() / 500))
     for led in range(NUM_LEDS):
         strip.set_hsv(led, hue, sat, p)
@@ -50,23 +51,25 @@ def pulse():
 
 # TODO
 def twinkle():
-    for led in range(NUM_LEDS):
-        strip.set_hsv(led, hue, sat, random.uniform(val - 0.4, val))
-
-    time.sleep(0.1)
+    global last_update
+    if last_update is None or time.ticks_ms() - last_update > 60:
+        for led in range(NUM_LEDS):
+            strip.set_hsv(led, hue, sat, random.uniform(val - 0.4, val))
+        last_update = time.ticks_ms()
 
 
 # TODO
 def blink():
-    global blink_on
+    global blink_on, last_update
     if blink_on:
         for led in range(NUM_LEDS):
             strip.set_hsv(led, hue, sat, val)
     else:
         strip.clear()
 
-    time.sleep(0.5)
-    blink_on = not blink_on
+    if last_update is None or time.ticks_ms() - last_update > 750:
+        blink_on = not blink_on
+        last_update = time.ticks_ms()
 
 
 # TODO
@@ -80,7 +83,8 @@ def rainbow():
 
 # TODO
 def set_effect(e):
-    global effect
+    global effect, last_update
+    last_update = None
     strip.clear()
     effect = e
 
@@ -142,7 +146,6 @@ try:
 
         if effect:
             effect()   # Always update, for animations
-        time.sleep(TIMESTEP)
 
 # End the program by stopping any active systems
 finally:
