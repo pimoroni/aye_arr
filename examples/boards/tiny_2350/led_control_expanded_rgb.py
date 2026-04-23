@@ -1,23 +1,22 @@
 import json
 import time
 
-from machine import Pin
-from plasma import COLOR_ORDER_BGR, WS2812
+from pimoroni import RGBLED
 
 import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 """
-Set the colour of a RGB LED strip connected to Plasma 2350 using the
-number buttons on the Pimoroni Aye Arr Remote, and change it using the Red-Cyan,
+Set the colour of Tiny 2350's onboard RGB LED using the number buttons
+on the Pimoroni Aye Arr Remote, and change it using the Red-Cyan,
 Green-Magenta, and Blue-Yellow button pairs. This also plays a rainbow
 effect, and includes saving and loading of settings.
 
 Actions:
 - LEFT Button [Press + Hold] = Decrease Speed
 - RIGHT Button [Press + Hold] = Increase Speed
-- (0)-(6) Buttons [Short Press] = Set Colour
+- (1)-(6) Buttons [Short Press] = Set Colour
 - (7) Button [Press] = Set Warm White
 - (8) Button [Press] = Set White
 - (9) Button [Press] = Set Cool White
@@ -31,15 +30,15 @@ Actions:
 - OK_STOP Button [Press] = Toggle On/Off
 
 An IR receiver should be connected to the IR_RX_PIN of your board.
-E.g. an IR Stick connected to the 3V, GND, and SDA of Plasma's Qw/ST port.
+E.g. an IR Stick connected to the 3V, GND, and SDA of Tiny's Qw/ST port.
 
 Press CTRL+C to exit the program.
 """
 
 # Constants
-IR_RX_PIN = 20          # The pin to listen for IR pulses on
-NUM_LEDS = 66           # The number of LEDs on the strip
-UPDATES = 50            # How many times to update the strip and effects per second
+IR_RX_PIN = 12          # The pin to listen for IR pulses on
+LED_PINS = 18, 19, 20   # The pins for controlling a RGB LED
+UPDATES = 50            # How many times to update the LED and effects per second
 TIMESTEP = 1 / UPDATES  # The time in seconds between each update
 STARTING_SPEED = 0.1    # The speed the effects will animate at initially
 SPEED_MULT = 1.1        # The amount to multiply or divide the effects speed by each button press
@@ -67,13 +66,32 @@ rgb = [100, 100, 100]
 changed = True
 offset = 0.0
 
-# Setup Plasma 2350's "A" button
-boot = Pin.board.BUTTON_A
-boot.init(Pin.IN, Pin.PULL_UP)
+# Setup the RGB LED
+led = RGBLED(*LED_PINS)
 
-# Setup the RGB LED strip, using PIO 0 and SM 0
-strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
-               color_order=COLOR_ORDER_BGR)
+
+# Function for converting HSV to RGB
+def rgb_from_hsv(h, s, v):
+    if s == 0.0:
+        return v, v, v
+    else:
+        i = int(h * 6.0)
+        f = (h * 6.0) - i
+        p, q, t = v * (1.0 - s), v * (1.0 - s * f), v * (1.0 - s * (1.0 - f))
+
+        i = i % 6
+        if i == 0:
+            return v, t, p
+        elif i == 1:
+            return q, v, p
+        elif i == 2:
+            return p, v, t
+        elif i == 3:
+            return p, q, v
+        elif i == 4:
+            return t, p, v
+        elif i == 5:
+            return v, p, q
 
 
 # Save the latest colour and speed to file
@@ -92,14 +110,14 @@ def load():
         pass
 
 
-# Toggle the LED strip on or off
+# Toggle the LED on or off
 def toggle_state():
     global state, changed
     state = not state
     changed = True
 
 
-# Set the LED strip colour, and turn it on
+# Set the LED colour, and turn it on
 def set_preset(colour):
     global rgb, changed, state
     rgb = [c for c in colour]
@@ -133,22 +151,18 @@ def rainbow():
     changed = True
 
 
-# Update the LED strip state
+# Update the LED state
 def update():
     global offset
     if state:
         if -1 in rgb:
-            for led in range(NUM_LEDS):
-                hue = float(led) / NUM_LEDS
-                strip.set_hsv(led, hue + offset, 1.0, 1.0)
-
+            red, green, blue = [int(x * 255) for x in rgb_from_hsv(offset, 1.0, 1.0)]
+            led.set_rgb(red, green, blue)
             offset = (offset + (speed * TIMESTEP)) % 1.0
         else:
-            for led in range(NUM_LEDS):
-                strip.set_rgb(led, *rgb)
+            led.set_rgb(*rgb)
     else:
-        for led in range(NUM_LEDS):
-            strip.set_rgb(led, *BLACK)
+        led.set_rgb(*BLACK)
 
 
 # Create the remote and setup up what each of our buttons will do
@@ -178,11 +192,10 @@ load()
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    strip.start(UPDATES)    # Start updating the LED strip
     receiver.start()
 
-    # Loop until the "A" button is pressed
-    while boot.value():
+    # Loop forever
+    while True:
         # Decode any IR pulses received since the last time this was called.
         receiver.decode()
 
@@ -197,5 +210,4 @@ try:
 # End the program by stopping any active systems
 finally:
     receiver.stop()
-    strip.clear()
-    time.sleep(0.1)     # Short delay for the clear to take effect
+    led.set_rgb(*BLACK)

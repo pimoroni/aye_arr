@@ -7,6 +7,20 @@ import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
+"""
+Set the colour of a RGB LED strip connected to Plasma 2350 using the
+number buttons on the Pimoroni Aye Arr Remote.
+
+Actions:
+- (1)-(9) Buttons [Press + Hold] = Set Colour
+- OK Button [Press + Hold] = Set Black
+
+An IR receiver should be connected to the IR_RX_PIN of your board.
+E.g. an IR Stick connected to the 3V, GND, and SDA of Plasma's Qw/ST port.
+
+Press CTRL+C to exit the program.
+"""
+
 # Constants
 IR_RX_PIN = 20          # The pin to listen for IR pulses on
 NUM_LEDS = 66           # The number of LEDs on the strip
@@ -23,7 +37,7 @@ WHITE = 255, 255, 255
 COOL = 96, 192, 255
 BLACK = 0, 0, 0
 
-# Setup the RGB LED strip
+# Setup the RGB LED strip, using PIO 0 and SM 0
 strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
                color_order=COLOR_ORDER_BGR)
 

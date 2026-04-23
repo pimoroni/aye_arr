@@ -8,6 +8,18 @@ from plasma import COLOR_ORDER_BGR, WS2812
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
+"""
+TODO
+
+Actions:
+-  TODO
+
+An IR receiver should be connected to the IR_RX_PIN of your board.
+E.g. an IR Stick connected to the 3V, GND, and SDA of Plasma's Qw/ST port.
+
+Press CTRL+C to exit the program.
+"""
+
 # Constants
 IR_RX_PIN = 20          # The pin to listen for IR pulses on
 NUM_LEDS = 66           # The number of LEDs on the strip
@@ -24,17 +36,19 @@ sat = 1.0
 val = 1.0
 blink_on = False
 
-# Setup the RGB LED strip
+# Setup the RGB LED strip, using PIO 0 and SM 0
 strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
                color_order=COLOR_ORDER_BGR)
 
 
+# TODO
 def pulse():
     p = abs(math.cos(time.ticks_ms() / 500))
     for led in range(NUM_LEDS):
         strip.set_hsv(led, hue, sat, p)
 
 
+# TODO
 def twinkle():
     for led in range(NUM_LEDS):
         strip.set_hsv(led, hue, sat, random.uniform(val - 0.4, val))
@@ -42,6 +56,7 @@ def twinkle():
     time.sleep(0.1)
 
 
+# TODO
 def blink():
     global blink_on
     if blink_on:
@@ -54,6 +69,7 @@ def blink():
     blink_on = not blink_on
 
 
+# TODO
 def rainbow():
     offset = abs(math.sin(time.ticks_ms() / 2000))
 
@@ -62,24 +78,28 @@ def rainbow():
         strip.set_hsv(led, hue + offset, sat, val)
 
 
+# TODO
 def set_effect(e):
     global effect
     strip.clear()
     effect = e
 
 
+# TODO
 def update_hue(h):
     global hue
     hue += h
     hue %= 1.0
 
 
+# TODO
 def update_sat(s):
     global sat
     sat += s
     sat = min(max(sat, 0.0), 1.0)
 
 
+# TODO
 def update_val(b):
     global val
     val += b

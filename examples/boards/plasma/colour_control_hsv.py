@@ -1,17 +1,19 @@
-from pimoroni import RGBLED
+import time
+
+from machine import Pin
+from plasma import COLOR_ORDER_BGR, WS2812
 
 import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 """
-Set the colour of Tiny 2350's onboard RGB LED using the number buttons
-on the Pimoroni Aye Arr Remote, and change it using the directional buttons.
-This version makes use of HSV to allow for changing of colours.
+Set the colour of a RGB LED strip connected to Plasma 2350 using the
+number buttons on the Pimoroni Aye Arr Remote, and change its hue,
+saturation, and value using the directional buttons.
 
 Actions:
-- (1)-(6) Button [Press + Hold] = Set Colour
-- (8) Button [Press + Hold] = Set White
+- (1)-(9) Button [Press + Hold] = Set Colour
 - OK_STOP Button [Press + Hold] = Set Black
 - UP Button [Press + Hold] = Increase Value
 - DOWN Button [Press + Hold] = Decrease Value
@@ -21,14 +23,14 @@ Actions:
 - CLOCKWISE Button [Press + Hold] = Increase Hue
 
 An IR receiver should be connected to the IR_RX_PIN of your board.
-E.g. an IR Stick connected to the 3V, GND, and SDA of Tiny's Qw/ST port.
+E.g. an IR Stick connected to the 3V, GND, and SDA of Plasma's Qw/ST port.
 
 Press CTRL+C to exit the program.
 """
 
 # Constants
-IR_RX_PIN = 12          # The pin to listen for IR pulses on
-LED_PINS = 18, 19, 20   # The pins for controlling a RGB LED
+IR_RX_PIN = 20          # The pin to listen for IR pulses on
+NUM_LEDS = 66           # The number of LEDs on the strip
 
 HUE_STEP = 0.01         # The amount that hue will change by with each press / repeat
 SAT_STEP = 0.01         # The amount that saturation will change by with each press / repeat
@@ -41,7 +43,9 @@ BLUE = 4 / 6, 1, 1
 CYAN = 3 / 6, 1, 1
 MAGENTA = 5 / 6, 1, 1
 YELLOW = 1 / 6, 1, 1
+WARM = 0.1, 0.624, 1
 WHITE = 0, 0, 1
+COOL = 0.56, 0.624, 1
 BLACK = 0, 0, 0
 
 # Variables
@@ -49,8 +53,9 @@ hue = 0
 sat = 0
 val = 0
 
-# Setup the RGB LED
-led = RGBLED(*LED_PINS)
+# Setup the RGB LED strip, using PIO 0 and SM 0
+strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
+               color_order=COLOR_ORDER_BGR)
 
 
 # Function for converting HSV to RGB
@@ -83,7 +88,8 @@ def set_hsv(colour):
     hue, sat, val = colour
 
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
-    led.set_rgb(red, green, blue)
+    for led in range(NUM_LEDS):
+        strip.set_rgb(led, red, green, blue)
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
@@ -93,7 +99,8 @@ def cycle_hue(amount):
     hue += amount % 1.0
 
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
-    led.set_rgb(red, green, blue)
+    for led in range(NUM_LEDS):
+        strip.set_rgb(led, red, green, blue)
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
@@ -103,7 +110,8 @@ def adjust_sat(amount):
     sat = max(min(sat + amount, 1.0), 0.0)
 
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
-    led.set_rgb(red, green, blue)
+    for led in range(NUM_LEDS):
+        strip.set_rgb(led, red, green, blue)
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
@@ -113,7 +121,8 @@ def adjust_val(amount):
     val = max(min(val + amount, 1.0), 0.0)
 
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
-    led.set_rgb(red, green, blue)
+    for led in range(NUM_LEDS):
+        strip.set_rgb(led, red, green, blue)
     print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
 
 
@@ -125,7 +134,9 @@ remote.bind("3_BLUE", (set_hsv, BLUE))
 remote.bind("4_CYAN", (set_hsv, CYAN))
 remote.bind("5_MAGENTA", (set_hsv, MAGENTA))
 remote.bind("6_YELLOW", (set_hsv, YELLOW))
+remote.bind("7_WARM", (set_hsv, WARM))
 remote.bind("8_WHITE", (set_hsv, WHITE))
+remote.bind("9_COOL", (set_hsv, COOL))
 remote.bind("OK_STOP", (set_hsv, BLACK))
 remote.bind("CLOCKWISE", (cycle_hue, HUE_STEP))
 remote.bind("ANTICLOCK", (cycle_hue, -HUE_STEP))
@@ -142,6 +153,7 @@ receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
+    strip.start()
     receiver.start()
 
     # Loop forever
@@ -153,3 +165,5 @@ try:
 # End the program by stopping any active systems
 finally:
     receiver.stop()
+    strip.clear()
+    time.sleep(0.1)     # Short delay for the clear to take effect
