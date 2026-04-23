@@ -23,25 +23,27 @@ Press CTRL+C to exit the program.
 # Constants
 IR_RX_PIN = 20          # The pin to listen for IR pulses on
 NUM_LEDS = 66           # The number of LEDs on the strip
-UPDATES = 50            # How many times to update the strip and effects per second
 
 HUE_STEP = 0.01         # The amount that hue will change by with each press / repeat
 SAT_STEP = 0.01         # The amount that saturation will change by with each press / repeat
 VAL_STEP = 0.05         # The amount that value will change by with each press / repeat
+
+TWINKLE_MS = 60         # Time in milliseconds between each twinkle update
+BLINK_MS = 750          # Time in milliseconds between each blink update
 
 # Variables
 hue = 1.0
 sat = 1.0
 val = 1.0
 blink_on = False
-last_update = None
+last_update = time.ticks_ms()
 
 # Setup the RGB LED strip, using PIO 0 and SM 0
 strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
                color_order=COLOR_ORDER_BGR)
 
 
-# TODO
+# Pulse the LEDs between off and full brightness
 def pulse():
     global last_update
     p = abs(math.cos(time.ticks_ms() / 500))
@@ -49,16 +51,16 @@ def pulse():
         strip.set_hsv(led, hue, sat, p)
 
 
-# TODO
+# Twinkle, twinkle, little star.
 def twinkle():
     global last_update
-    if last_update is None or time.ticks_ms() - last_update > 60:
+    if time.ticks_diff(time.ticks_ms(), last_update) > TWINKLE_MS:
         for led in range(NUM_LEDS):
             strip.set_hsv(led, hue, sat, random.uniform(val - 0.4, val))
         last_update = time.ticks_ms()
 
 
-# TODO
+# On, Off, On, Off!
 def blink():
     global blink_on, last_update
     if blink_on:
@@ -67,12 +69,12 @@ def blink():
     else:
         strip.clear()
 
-    if last_update is None or time.ticks_ms() - last_update > 750:
+    if time.ticks_diff(time.ticks_ms(), last_update) > BLINK_MS:
         blink_on = not blink_on
         last_update = time.ticks_ms()
 
 
-# TODO
+# Rainbowz
 def rainbow():
     offset = abs(math.sin(time.ticks_ms() / 2000))
 
@@ -81,29 +83,29 @@ def rainbow():
         strip.set_hsv(led, hue + offset, sat, val)
 
 
-# TODO
+# Changes the current effect.
 def set_effect(e):
     global effect, last_update
-    last_update = None
+    last_update = time.ticks_ms()
     strip.clear()
     effect = e
 
 
-# TODO
+# Adjusts the value of the hue variable used in HSV
 def update_hue(h):
     global hue
     hue += h
     hue %= 1.0
 
 
-# TODO
+# Adjusts the value of the saturation variable used in HSV
 def update_sat(s):
     global sat
     sat += s
     sat = min(max(sat, 0.0), 1.0)
 
 
-# TODO
+# Adjusts the value of the val variable used in HSV
 def update_val(b):
     global val
     val += b
@@ -136,7 +138,7 @@ effect = blink
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    strip.start(UPDATES)
+    strip.start()
     receiver.start()
 
     # Loop forever
