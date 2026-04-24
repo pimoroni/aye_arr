@@ -91,7 +91,7 @@ def set_hsv(colour):
 # Function called to change the hue of the colour
 def cycle_hue(amount):
     global hue
-    hue += amount % 1.0
+    hue = (hue + amount) % 1.0
 
     red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     led.set_rgb(red, green, blue)

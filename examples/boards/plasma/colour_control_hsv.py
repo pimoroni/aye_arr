@@ -58,50 +58,24 @@ strip = WS2812(NUM_LEDS, 0, 0, Pin.board.PLASMA_DAT,
                color_order=COLOR_ORDER_BGR)
 
 
-# Function for converting HSV to RGB
-def rgb_from_hsv(h, s, v):
-    if s == 0.0:
-        return v, v, v
-    else:
-        i = int(h * 6.0)
-        f = (h * 6.0) - i
-        p, q, t = v * (1.0 - s), v * (1.0 - s * f), v * (1.0 - s * (1.0 - f))
-
-        i = i % 6
-        if i == 0:
-            return v, t, p
-        elif i == 1:
-            return q, v, p
-        elif i == 2:
-            return p, v, t
-        elif i == 3:
-            return p, q, v
-        elif i == 4:
-            return t, p, v
-        elif i == 5:
-            return v, p, q
-
-
 # Function called when a colour button is pressed
 def set_hsv(colour):
     global hue, sat, val
     hue, sat, val = colour
 
-    red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     for led in range(NUM_LEDS):
-        strip.set_rgb(led, red, green, blue)
-    print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
+        strip.set_hsv(led, hue, sat, val)
+    print(f"H = {hue:.2}, S = {sat:.2}, V = {val:.2}")
 
 
 # Function called to change the hue of the colour
 def cycle_hue(amount):
     global hue
-    hue += amount % 1.0
+    hue = (hue + amount) % 1.0
 
-    red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     for led in range(NUM_LEDS):
-        strip.set_rgb(led, red, green, blue)
-    print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
+        strip.set_hsv(led, hue, sat, val)
+    print(f"H = {hue:.2}, S = {sat:.2}, V = {val:.2}")
 
 
 # Function called to change the saturation of the colour
@@ -109,10 +83,9 @@ def adjust_sat(amount):
     global sat
     sat = max(min(sat + amount, 1.0), 0.0)
 
-    red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     for led in range(NUM_LEDS):
-        strip.set_rgb(led, red, green, blue)
-    print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
+        strip.set_hsv(led, hue, sat, val)
+    print(f"H = {hue:.2}, S = {sat:.2}, V = {val:.2}")
 
 
 # Function called to change the value (brightness) of the colour
@@ -120,10 +93,9 @@ def adjust_val(amount):
     global val
     val = max(min(val + amount, 1.0), 0.0)
 
-    red, green, blue = [int(x * 255) for x in rgb_from_hsv(hue, sat, val)]
     for led in range(NUM_LEDS):
-        strip.set_rgb(led, red, green, blue)
-    print(f"Colour = #{red:02x}{green:02x}{blue:02x}")
+        strip.set_hsv(led, hue, sat, val)
+    print(f"H = {hue:.2}, S = {sat:.2}, V = {val:.2}")
 
 
 # Create the remote and setup up what each of the buttons will do

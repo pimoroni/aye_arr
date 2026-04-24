@@ -1,6 +1,6 @@
 # Aye Arr - Plasma 2350 (W) - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the [Pimoroni Plasma 2350](https://shop.pimoroni.com/products/plasma-2350) and [Pimoroni Plasma 2350 W](https://shop.pimoroni.com/products/plasma-2350-w)
+These are micropython examples for using Aye Arr with the [Pimoroni Plasma 2350](https://shop.pimoroni.com/products/plasma-2350) and [Pimoroni Plasma 2350 W](https://shop.pimoroni.com/products/plasma-2350-w).
 
 - [Examples](#examples)
   - [Colour Control (RGB)](#colour-control-rgb)
@@ -32,4 +32,4 @@ Set the colour of a RGB LED strip connected to Plasma 2350 using the number butt
 ### Effects Control
 [effects_control.py](effects_control.py)
 
-TODO
+Use the number buttons on the Pimoroni Aye Arr Remote to select between a effects to play across a RGB LED strip connected to Plasma 2350, and change its hue, saturation, and value using the directional buttons.

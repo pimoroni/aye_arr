@@ -1,10 +1,27 @@
 from motor import Motor, pico_motor_shim
 from pimoroni import REVERSED_DIR
 
+import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
 """
+Control a 2-wheeled robot built using a Raspberry Pi Pico and
+Pimoroni Motor Shim for Pico using the Pimoroni Aye Arr Remote.
+
+Actions:
+- UP Button [Press + Hold] = Drive Forward
+- DOWN Button [Press + Hold] = Drive Backward
+- LEFT Button [Press + Hold] = Turn Left
+- RIGHT Button [Press + Hold] = Turn Right
+- ANTICLOCK Button [Press + Hold] = Arc Forward-Left
+- CLOCKWISE Button [Press + Hold] = Arc Forward-Right
+- Directional Buttons [Release] = Stop Driving
+
+An IR receiver should be connected to the IR_RX_PIN of your board.
+E.g. an IR Stick connected to the 3V, GND, and SDA of the Motor Shim's Qw/ST port.
+
+Press CTRL+C to exit the program.
 """
 
 # Constants
@@ -20,40 +37,47 @@ right = Motor(pico_motor_shim.MOTOR_2)
 left.direction(REVERSED_DIR)
 
 
-# Function for driving forward or backward
+# Drive forward or backward
 def forward(d):
     if d > 0:
         left.speed(SPEED)
         right.speed(SPEED)
+        print("Driving Forward")
     else:
         left.speed(-SPEED)
         right.speed(-SPEED)
+        print("Driving Backward")
 
 
-# Function for turning on the spot
+# Turn on the spot
 def turn(d):
     if d > 0:
         left.speed(SPEED)
         right.speed(-SPEED)
+        print("Turning Right")
     else:
         left.speed(-SPEED)
         right.speed(SPEED)
+        print("Turning Left")
 
 
-# Function for turning in an arc
+# Turn in a forward arc
 def arc(d):
     if d > 0:
         left.speed(SPEED)
         right.speed(SPEED / 2)
+        print("Arcing Forward-Right")
     else:
         left.speed(SPEED / 2)
         right.speed(SPEED)
+        print("Arcing Forward-Left")
 
 
-# Function to stop moving
+# Stop moving
 def stop():
     left.stop()
     right.stop()
+    print("Stopping")
 
 
 # Create the remote and setup up what each of the buttons will do
@@ -66,7 +90,7 @@ remote.bind("ANTICLOCK", on_press=(arc, -1), on_release=stop)
 remote.bind("CLOCKWISE", on_press=(arc, 1), on_release=stop)
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
