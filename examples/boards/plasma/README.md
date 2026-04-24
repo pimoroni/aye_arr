@@ -1,6 +1,6 @@
 # Aye Arr - Plasma 2350 (W) - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the [Pimoroni Plasma 2350](https://shop.pimoroni.com/products/plasma-2350) and [Pimoroni Plasma 2350 W](https://shop.pimoroni.com/products/plasma-2350-w).
+These are MicroPython examples for using Aye Arr with the [Pimoroni Plasma 2350](https://shop.pimoroni.com/products/plasma-2350) and [Pimoroni Plasma 2350 W](https://shop.pimoroni.com/products/plasma-2350-w).
 
 - [Examples](#examples)
   - [Colour Control (RGB)](#colour-control-rgb)

@@ -1,10 +1,16 @@
-# Pimoroni Tiny FX - Library Reference <!-- omit in toc -->
+# Aye Arr - Pulse - Library Reference <!-- omit in toc -->
 
-This is the library reference for the [Pimoroni Tiny FX](https://shop.pimoroni.com/products/tinyfx), a LED effects controller, powered by the Raspberry Pi RP2040.
+This is the library reference for the `Pulse` component of the Aye Arr MicroPython library.
 
 
 ## Table of Content <!-- omit in toc -->
 
+- [`PulseSender` Reference](#pulsesender-reference)
+  - [Functions](#functions)
+- [`pulse.receive` Reference](#pulsereceive-reference)
+  - [Constants](#constants)
+- [`PulseReceiver` Reference](#pulsereceiver-reference)
+  - [Functions](#functions-1)
 
 
 ## `PulseSender` Reference
@@ -31,11 +37,16 @@ send(burst_us: int, idle_us: int) -> None
 wait_for_send() -> None
 ```
 
-## `PulseReceiver` Reference
+## `pulse.receive` Reference
 
 ### Constants
 
-`DEFAULT_FILTER_THRESHOLD_US` = `200`
+```python
+DEFAULT_FILTER_THRESHOLD_US = 200
+```
+
+
+## `PulseReceiver` Reference
 
 ### Functions
 

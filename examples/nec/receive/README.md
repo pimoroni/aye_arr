@@ -1,6 +1,6 @@
 # Aye Arr - NEC Receive - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the NEC protocol to receive infrared signals.
+These are MicroPython examples for using Aye Arr with the NEC protocol to receive infrared signals.
 
 - [Examples](#examples)
   - [Listen](#listen)

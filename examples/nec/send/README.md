@@ -1,6 +1,6 @@
 # Aye Arr - NEC Send - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the NEC protocol to send infrared signals.
+These are MicroPython examples for using Aye Arr with the NEC protocol to send infrared signals.
 
 - [Examples](#examples)
   - [Send Code](#send-code)

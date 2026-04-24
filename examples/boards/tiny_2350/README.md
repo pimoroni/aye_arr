@@ -1,6 +1,6 @@
 # Aye Arr - Tiny 2350 - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the [Pimoroni Tiny 2350](https://shop.pimoroni.com/products/tiny-2350).
+These are MicroPython examples for using Aye Arr with the [Pimoroni Tiny 2350](https://shop.pimoroni.com/products/tiny-2350).
 
 - [Examples](#examples)
   - [LED Control (RGB)](#led-control-rgb)

@@ -1,9 +1,15 @@
-# Pimoroni Tiny FX - Library Reference <!-- omit in toc -->
+# Aye Arr - NEC Remote - Library Reference <!-- omit in toc -->
 
-This is the library reference for the [Pimoroni Tiny FX](https://shop.pimoroni.com/products/tinyfx), a LED effects controller, powered by the Raspberry Pi RP2040.
+This is the library reference for the `NEC Remote` component of the Aye Arr MicroPython library.
 
 
 ## Table of Content <!-- omit in toc -->
+
+- [`RemoteDescriptor` Reference](#remotedescriptor-reference)
+  - [Constants](#constants)
+  - [Variables](#variables)
+  - [Functions](#functions)
+  - [Named Tuples](#named-tuples)
 
 
 ## `RemoteDescriptor` Reference

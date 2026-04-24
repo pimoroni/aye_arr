@@ -1,6 +1,6 @@
 # Aye Arr - Motor Shim for Pico - MicroPython Examples <!-- omit in toc -->
 
-These are micropython examples for using Aye Arr with the [Pimoroni Motor Shim for Pico](https://shop.pimoroni.com/products/motor-shim-for-pico).
+These are MicroPython examples for using Aye Arr with the [Pimoroni Motor Shim for Pico](https://shop.pimoroni.com/products/motor-shim-for-pico).
 
 - [Examples](#examples)
   - [Remote Control](#remote-control)

@@ -1,10 +1,17 @@
-# Pimoroni Tiny FX - Library Reference <!-- omit in toc -->
+# Aye Arr - NEC - Library Reference <!-- omit in toc -->
 
-This is the library reference for the [Pimoroni Tiny FX](https://shop.pimoroni.com/products/tinyfx), a LED effects controller, powered by the Raspberry Pi RP2040.
+This is the library reference for the `Pulse` component of the Aye Arr MicroPython library.
 
 
 ## Table of Content <!-- omit in toc -->
 
+- [`PulseSender` Reference](#pulsesender-reference)
+  - [Functions](#functions)
+- [`NECReceiver` Reference](#necreceiver-reference)
+  - [Functions](#functions-1)
+- [`NECRemoteReceiver` Reference](#necremotereceiver-reference)
+  - [Constants](#constants)
+  - [Functions](#functions-2)
 
 
 ## `PulseSender` Reference
@@ -19,7 +26,7 @@ NECSender(pin_num: int,
           debug_burst_pin: int=None,
           debug_send_pin: int=None,
           debug_wait_pin: int=None,
-          logging_level: int=logging.LOG_WARN)
+          logging_level: int=logging.LOG_NONE)
 
 # Interaction
 start() -> None
@@ -45,7 +52,7 @@ NECReceiver(pin_num: int,
             debug_pin_base: int=None,
             debug_blip_pin: int=None,
             debug_error_pin: int=None,
-            logging_level: int=logging.LOG_WARN)
+            logging_level: int=logging.LOG_NONE)
 
 # Binding
 bind(on_press: callable,
@@ -67,7 +74,9 @@ decode_no_filter() -> None
 
 ### Constants
 
-`SHORT_RELEASE_MS` = `250`
+```python
+SHORT_RELEASE_MS = 250
+```
 
 ### Functions
 
@@ -80,7 +89,7 @@ NECRemoteReceiver(pin_num: int,
                   debug_pin_base: int=None,
                   debug_blip_pin: int=None,
                   debug_error_pin: int=None,
-                  logging_level: int=logging.LOG_WARN)
+                  logging_level: int=logging.LOG_NONE)
 
 # Binding
 bind(remote_descriptor: RemoteDescriptor, force: bool=False) -> None
