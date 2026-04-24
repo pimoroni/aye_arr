@@ -1,6 +1,8 @@
-# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2026 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
+
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
 
 import rp2
 

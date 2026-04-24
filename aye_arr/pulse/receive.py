@@ -1,17 +1,18 @@
-# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2026 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
-import rp2
+from collections import deque
+
 from machine import Pin
-from collections import deque  # , namedtuple
-from .pio.rx import pulsereader, pulsereader_debug, FREQUENCY, \
-                    count_to_burst_us, count_to_idle_us, TIMEOUT_REACHED
-from .common import Pulse, DebugPin
+from rp2 import PIO, StateMachine
+
+from .common import DebugPin, Pulse
+from .pio.rx import FREQUENCY, TIMEOUT_REACHED, count_to_burst_us, count_to_idle_us, pulsereader, pulsereader_debug
 
 # Constants
 MAX_BUFFER = const(1024)
-DEFAULT_FILTER_THRESHOLD = const(200)
+DEFAULT_FILTER_THRESHOLD_US = const(200)
 
 
 class PulseReceiver:
@@ -21,16 +22,37 @@ class PulseReceiver:
         self.__sequence = []
         self.__last_pulse = None
 
+        # Check the PIO is valid
+        try:
+            _ = PIO(pio)
+        except ValueError:
+            raise ValueError("pio out of range. Expected 0 or 1 (or 2 if on RP2350)") from None
+
+        # Check the State Machine is valid
+        if sm < 0 or sm > 3:
+            raise ValueError("sm out of range. Expected 0 to 3")
+
         # Set up the pin used to receive pulse signals
         pin = Pin(pin_num, Pin.IN, Pin.PULL_UP)
 
+        # For the RP2350, shift the gpio_base of this PIO if the pin is above 32
+        base = 16 if pin_num >= 32 else 0
+        try:
+            PIO(pio).gpio_base(base)
+        except AttributeError:
+            # Handle RP2040 not having the gpio_base function
+            pass
+
         # Load either the regular or debug program into the chosen StateMachine
         if debug_pin_base is None:
-            self.__sm = rp2.StateMachine(sm + (pio * 4), pulsereader,
+            self.__sm = StateMachine(sm + (pio * 4), pulsereader,
                                          freq=FREQUENCY, in_base=pin,
                                          jmp_pin=pin)
         else:
-            self.__sm = rp2.StateMachine(sm + (pio * 4), pulsereader_debug,
+            if debug_pin_base < base or debug_pin_base > base + 30:    # 30 because the debug PIO uses two sideset pins
+                raise ValueError(f"'debug_pin_base' is outside the GPIO base of 'pin_num'.\
+                                 Choose a 'debug_pin_base' between {base} and {base + 30}") from None
+            self.__sm = StateMachine(sm + (pio * 4), pulsereader_debug,
                                          freq=FREQUENCY, in_base=pin,
                                          sideset_base=Pin(debug_pin_base),
                                          jmp_pin=pin)
@@ -56,11 +78,11 @@ class PulseReceiver:
         while sm.rx_fifo() > 0:
             self.__counts.append(sm.get())
 
-    def __analyse(self, pulses, debug=False):
+    def __analyse(self, pulses):
         # Override this to analyse a received sequence of pulses
         pass
 
-    def decode_no_filter(self, debug=False):
+    def decode_no_filter(self):
         """
         Checks for any newly received pulses since the last time `decode` was
         called. Once a sufficient number of pulses has been received, as
@@ -84,7 +106,7 @@ class PulseReceiver:
             # Did the count timeout get reached?
             if count_pair == TIMEOUT_REACHED:
                 # Analyse, and clear the pulse sequence
-                self.__analyse(self.__sequence, debug)
+                self.__analyse(self.__sequence)
                 self.__sequence.clear()
                 continue        # Skip to the next pulse
 
@@ -93,7 +115,7 @@ class PulseReceiver:
                           count_to_idle_us(count_pair & 0xffff))
             self.__sequence.append(pulse)
 
-    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD, debug=False):   # with filter
+    def decode(self, filter_threshold=DEFAULT_FILTER_THRESHOLD_US):   # with filter
         """
         Checks for any newly received pulses since the last time `decode` was
         called. Once a sufficient number of pulses has been received, as
@@ -122,7 +144,7 @@ class PulseReceiver:
                     self.__last_pulse = None
 
                 # Analyse, and clear the pulse sequence
-                self.__analyse(self.__sequence, debug)
+                self.__analyse(self.__sequence)
                 self.__sequence.clear()
                 continue        # Skip to the next pulse
 

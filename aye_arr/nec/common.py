@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2026 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
@@ -14,6 +14,7 @@ NEC_DATA_ONE_US = const(NEC_DATA_BURST_US * 3)
 NEC_DATA_LOCKOUT_US = const(9500)       # Set to be longer than the time of the receiver code's lockout
 
 NEC_REPEAT = const(-1)
+NEC_NONE = const(-2)
 NEC_ALLOWED_DEVIATION_PERCENT = const(0.3)
 NEC_REPEAT_TIMEOUT_MS = const(150)
 

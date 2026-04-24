@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2026 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
-from machine import Pin
 from collections import namedtuple
+
+from machine import Pin
 
 # Tuple for storing pulse parameters
 Pulse = namedtuple("Pulse", ("burst", "idle"))

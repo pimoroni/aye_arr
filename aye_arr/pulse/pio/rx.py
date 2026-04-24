@@ -1,10 +1,12 @@
-# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2026 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
 # This implementation is derived from: https://github.com/rdear4/Pico_PIO_IR_Receiver/blob/main/PulseReader.py
 # It features improved timing accuracy and reduces counters to 16 bits,allowing both low (burst) and high (idle)
 # phases to be sent together, which along with a joined RX FIFO gives more time for the main program to handle data.
+
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
 
 import rp2
 

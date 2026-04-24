@@ -1,0 +1,48 @@
+import time
+
+from aye_arr.nec import NECSender
+
+"""
+Send a NEC infrared command to an address, with repeats.
+
+Repeats are used by remotes to signal that a button is being held down.
+These should be sent every 108ms to match the NEC protocol spec.
+
+To use this code, connect an IR LED (with a suitable resistor) to the IR_TX_PIN.
+
+Press CTRL+C to exit the program.
+"""
+
+# Constants
+IR_TX_PIN = 0           # The pin to send the IR pulses on
+ADDRESS = 0x00          # The 8-bit address to send the command to
+COMMAND = 0x46          # The 8-bit command to send to the address
+REPEATS = 5             # The number of times to send the repeat
+REPEAT_DELAY = 0.108    # the time (in seconds) between each repeat.
+SILENCE_DELAY = 1       # The time (in seconds) between each code send
+
+# Set up an NECSender on the TX pin, using PIO 0 and SM 0.
+sender = NECSender(IR_TX_PIN, 0, 0)
+
+# Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
+try:
+    sender.start()
+
+    # Loop forever
+    while True:
+        # Send the intended command to the address once per loop
+        print(f"Sending Addr 0x{ADDRESS:02x}, Cmd 0x{COMMAND:02x}")
+        sender.send_addr_cmd(ADDRESS, COMMAND)
+
+        # Send repeats rather than resending the command
+        for i in range(REPEATS):
+            time.sleep(REPEAT_DELAY)
+            print("Sending Repeat")
+            sender.send_repeat()
+
+        # Have a period of silence between each burst
+        time.sleep(SILENCE_DELAY)
+
+# End the program by stopping any active systems
+finally:
+    sender.stop()
