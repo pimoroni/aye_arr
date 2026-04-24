@@ -19,7 +19,7 @@ def received(code):
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0.
 # Optionally set the logging_level to get more information about what is received.
-# Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
+# Accepted values are LOG_NONE (0) [the default], LOG_WARN (1), LOG_INFO (2), and LOG_DEBUG (3)
 receiver = NECReceiver(IR_RX_PIN, 1, 0)
 
 # Bind the receive function to the receiver, and turn off listening for repeats

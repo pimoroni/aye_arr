@@ -37,7 +37,7 @@ def perform_callback(callback, *args):
 class NECReceiver(PulseReceiver):
     def __init__(self, pin_num, pio, sm,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
-                 logging_level=logging.LOG_WARN):
+                 logging_level=logging.LOG_NONE):
         self.__last_code = NEC_NONE
         self.__received_ms = time.ticks_ms()
         self.__last_code_ms = self.__received_ms
@@ -187,7 +187,7 @@ class NECRemoteReceiver(NECReceiver):
 
     def __init__(self, pin_num, pio, sm, extended_addresses=False,
                  debug_pin_base=None, debug_blip_pin=None, debug_error_pin=None,
-                 logging_level=logging.LOG_WARN):
+                 logging_level=logging.LOG_NONE):
         self.__remotes = {}
         self.__extended = extended_addresses
         self.__repeat_callbacks = []

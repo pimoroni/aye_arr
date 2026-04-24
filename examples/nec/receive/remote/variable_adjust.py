@@ -1,4 +1,3 @@
-import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -52,9 +51,7 @@ remote.bind("RIGHT", (adjust_brightness, BRIGHTNESS_STEP))
 remote.bind("LEFT", (adjust_brightness, -BRIGHTNESS_STEP))
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-# The logging level can be increased to get more information about what is received.
-# Accepted values are LOG_NONE, LOG_WARN (the default), LOG_INFO, and LOG_DEBUG
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

@@ -1,4 +1,4 @@
-import aye_arr.logging as logging
+from aye_arr.logging import LOG_INFO
 from aye_arr.nec import NECReceiver
 
 """
@@ -13,8 +13,8 @@ Press CTRL+C to exit the program.
 IR_RX_PIN = 26          # The pin to listen for IR pulses on
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0.
-# The logging_level is increased from LOG_WARN (the default) to show any codes received
-receiver = NECReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_INFO)
+# The logging_level is increased from LOG_NONE (the default) to show any codes received
+receiver = NECReceiver(IR_RX_PIN, 1, 0, logging_level=LOG_INFO)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:

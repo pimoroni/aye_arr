@@ -1,7 +1,6 @@
 from motor import Motor, pico_motor_shim
 from pimoroni import REVERSED_DIR
 
-import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -112,7 +111,7 @@ remote.bind("9_COOL", (update_speed, 0.9), on_repeat=None)
 remote.bind("0_RAINBOW", (update_speed, 1.0), on_repeat=None)
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

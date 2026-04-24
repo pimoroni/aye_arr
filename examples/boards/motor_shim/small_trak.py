@@ -1,12 +1,10 @@
 import time
+from collections import namedtuple
 
+from machine import Pin
 from motor import Motor, pico_motor_shim
 from pimoroni import REVERSED_DIR
 
-from machine import Pin
-from collections import namedtuple
-
-from aye_arr.logging import LOG_NONE
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -288,7 +286,7 @@ remote.bind("RETURN_UNDO", (on_function, "on_undo"), on_repeat=None)
 remote.bind("PLAY_PAUSE", (on_function, "on_play"), on_repeat=None)
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=LOG_NONE)
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
@@ -298,7 +296,6 @@ try:
     # Loop until the effect stops or the "Boot" button is pressed
     while True:
         # Decode any IR pulses received since the last time this was called.
-        # This should be done as frequently as possible to avoid inputs feeling sluggish
         receiver.decode()
 
         # Update the current state, and check for state changes

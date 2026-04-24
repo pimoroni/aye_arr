@@ -5,7 +5,6 @@ import time
 from machine import Pin
 from plasma import COLOR_ORDER_BGR, WS2812
 
-import aye_arr.logging as logging
 from aye_arr.nec import NECRemoteReceiver
 from aye_arr.nec.remotes import PimoroniRemote
 
@@ -147,7 +146,7 @@ remote.bind("DOWN", on_press=(adjust_val, -VAL_STEP))
 
 
 # Set up a receiver on the RX pin, using PIO 1 and SM 0, and bind the remote to it.
-receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0, logging_level=logging.LOG_NONE)
+receiver = NECRemoteReceiver(IR_RX_PIN, 1, 0)
 receiver.bind(remote)
 
 # Set the first effect that will start playing

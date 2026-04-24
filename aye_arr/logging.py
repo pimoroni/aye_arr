@@ -7,7 +7,7 @@ LOG_WARN = 1
 LOG_INFO = 2
 LOG_DEBUG = 3
 
-level = LOG_INFO
+level = LOG_NONE
 
 
 def warn(objects="", sep="", end="\n"):
