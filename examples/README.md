@@ -19,3 +19,10 @@ These are functional examples of the NEC protocol of the Aye Arr library, which 
 
 * [Send](nec/send)
 * [Receive](nec/receive)
+
+## Pulse Examples
+
+These are functional examples of the underlying `Pulse` layer, which sends and reads infrared pulses without a protocol on top. Use these to build a protocol of your own, or to work with a remote the NEC layer does not cover:
+
+* [Send](pulse/send)
+* [Receive](pulse/receive)
