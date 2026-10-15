@@ -1,5 +1,5 @@
 {
- "version": "1.0.0",
+ "version": "1.0.1",
  "urls": [
   ["aye_arr/logging.py", "github:pimoroni/aye_arr/aye_arr/logging.py"],
 
