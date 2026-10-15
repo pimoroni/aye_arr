@@ -42,6 +42,8 @@ include = [
 sources = ["src"]
 
 [tool.ruff]
+# Names the MicroPython compiler resolves without an import
+builtins = ['const', 'micropython']
 exclude = [
     '.tox',
     '.egg',
@@ -51,6 +53,10 @@ exclude = [
     'dist'
 ]
 line-length = 200
+
+[tool.ruff.lint]
+# Ruff widens its default rule set between releases, so state the groups linted against
+select = ['E4', 'E7', 'E9', 'F']
 
 [tool.codespell]
 skip = """
@@ -79,6 +85,7 @@ ignore = [
     'examples/boards/motor_shim/*',
     'examples/boards/plasma/*',
     'examples/boards/tiny_2350/*',
+    'examples/boards/tiny_fx/*',
     'tools/*',
     'requirements-dev.txt',
     'package.json'
