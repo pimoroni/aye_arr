@@ -32,7 +32,7 @@ class NECSender(PulseSender):
             raise ValueError("addr out of range. Expected 0x0000 to 0xffff")
 
         if cmd < 0 or cmd > 0xff:
-            raise ValueError("cmdr out of range. Expected 0x00 to 0xff")
+            raise ValueError("cmd out of range. Expected 0x00 to 0xff")
 
         code = addr
         if addr <= 0xff:    # Handle short addresses

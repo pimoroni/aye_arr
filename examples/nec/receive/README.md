@@ -79,7 +79,7 @@ Listen for NEC infrared commands sent from a Pimoroni remote, and use them to en
 [remote/binding_options.py](remote/binding_options.py)
 
 Listen for NEC infrared commands sent from a Pimoroni remote, and show how
-different actions can be used to each button behave differently.
+different actions can be used to make each button behave differently.
 
 
 ### Binding Timings

@@ -42,8 +42,12 @@ wait_for_send() -> None
 ### Constants
 
 ```python
+MAX_BUFFER = 1024
 DEFAULT_FILTER_THRESHOLD_US = 200
 ```
+
+`MAX_BUFFER` is how many pulse counts can wait between calls to `decode`, so
+calling it too infrequently discards the oldest.
 
 
 ## `PulseReceiver` Reference

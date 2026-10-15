@@ -1,11 +1,11 @@
 # Aye Arr - NEC - Library Reference <!-- omit in toc -->
 
-This is the library reference for the `Pulse` component of the Aye Arr MicroPython library.
+This is the library reference for the `NEC` component of the Aye Arr MicroPython library.
 
 
 ## Table of Content <!-- omit in toc -->
 
-- [`PulseSender` Reference](#pulsesender-reference)
+- [`NECSender` Reference](#necsender-reference)
   - [Functions](#functions)
 - [`NECReceiver` Reference](#necreceiver-reference)
   - [Functions](#functions-1)
@@ -14,7 +14,7 @@ This is the library reference for the `Pulse` component of the Aye Arr MicroPyth
   - [Functions](#functions-2)
 
 
-## `PulseSender` Reference
+## `NECSender` Reference
 
 ### Functions
 
@@ -69,6 +69,10 @@ decode(filter_threshold: int=DEFAULT_FILTER_THRESHOLD_US) -> None
 decode_no_filter() -> None
 ```
 
+Leaving `on_repeat` as `True` repeats the press action for as long as the button
+is held. Pass a callable to act differently on a repeat, or `None` to ignore
+repeats.
+
 
 ## `NECRemoteReceiver` Reference
 
@@ -85,7 +89,7 @@ SHORT_RELEASE_MS = 250
 NECRemoteReceiver(pin_num: int,
                   pio: int,
                   sm: int,
-                  extended_addresses: int=False,
+                  extended_addresses: bool=False,
                   debug_pin_base: int=None,
                   debug_blip_pin: int=None,
                   debug_error_pin: int=None,

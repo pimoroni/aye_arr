@@ -17,7 +17,7 @@ Control a 2-wheeled robot built using a Raspberry Pi Pico and Pimoroni Motor Shi
 
 
 ### Remote Control Expanded
-[remote_control-expanded.py](remote_control_expanded.py)
+[remote_control_expanded.py](remote_control_expanded.py)
 
 Control a 2-wheeled robot built using a Raspberry Pi Pico and Pimoroni Motor Shim for Pico using the Pimoroni Aye Arr Remote. This version lets the driving speed be adjusted using the number buttons.
 
