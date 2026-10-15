@@ -44,10 +44,13 @@ class PulseSender:
             self.__SM_MASK = (1 << (PIO_FSTAT_TXEMPTY_LSB + sm))
         self.__PIO_FREQ = carrier_freq * CLOCKS_PER_CYCLE
 
-        # For the RP2350, shift the gpio_base of this PIO if the pin is above 32
+        # For the RP2350, shift the gpio_base of this PIO if the pin is above 32.
+        # Setting it is refused once a program is loaded on that PIO, which a second
+        # sender on the same PIO meets, so only move it where it is not already there
         base = 16 if pin_num >= 32 else 0
         try:
-            PIO(pio).gpio_base(base)
+            if PIO(pio).gpio_base() != Pin(base):
+                PIO(pio).gpio_base(base)
         except AttributeError:
             # Handle RP2040 not having the gpio_base function
             pass
