@@ -39,7 +39,7 @@ If your board is online and has `mip` you should be able to run:
 
 ```python
 import mip
-mip.install("github:org/pimoroni/aye_arr/package.json")
+mip.install("github:pimoroni/aye_arr/package.json")
 ```
 
 Otherwise, using Tools -> Manage Packages in Thonny, locate the
