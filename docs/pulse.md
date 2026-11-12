@@ -43,11 +43,22 @@ wait_for_send() -> None
 
 ```python
 MAX_BUFFER = 1024
+RING_COUNTS = 256
 DEFAULT_FILTER_THRESHOLD_US = 200
 ```
 
-`MAX_BUFFER` is how many pulse counts can wait between calls to `decode`, so
-calling it too infrequently discards the oldest.
+`start()` claims a DMA channel, which copies each pulse count off the state
+machine as it arrives, and `stop()` frees it. No code has to run for a count to
+be kept, so a press is received whole even while the program is busy, such as
+sending a frame to a screen. `RING_COUNTS` is how many counts can wait between
+calls to `decode`, several presses' worth. Calling it too infrequently loses
+the sequence the oldest counts belonged to.
+
+Where every DMA channel is taken, or the port has no `rp2.DMA`, the receiver
+takes the counts from an interrupt instead. `MAX_BUFFER` is then how many can
+wait between calls to `decode`, and calling it too infrequently discards the
+oldest. An interrupt waits for other code to finish, so a long-running call can
+leave the state machine's FIFO full and the press it was receiving incomplete.
 
 
 ## `PulseReceiver` Reference

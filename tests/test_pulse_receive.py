@@ -7,10 +7,11 @@ plain name across the hierarchy. CPython mangles, so these tests record through
 """
 
 import pytest
-from conftest import FakePIO
+from conftest import FakeDMA, FakePIO
 
+from aye_arr.pulse import receive
 from aye_arr.pulse.pio.rx import BURST_COUNT_TIMEOUT, IDLE_COUNT_TIMEOUT, TIMEOUT_REACHED
-from aye_arr.pulse.receive import DEFAULT_FILTER_THRESHOLD_US, PulseReceiver
+from aye_arr.pulse.receive import DEFAULT_FILTER_THRESHOLD_US, RING_COUNTS, PulseReceiver
 from aye_arr.pulse.send import PulseSender
 
 # A pin at or above this number needs the PIO's window moved up
@@ -200,3 +201,112 @@ class TestFilter:
         receiver.decode()
 
         assert analysed[0][0] == (9000, 4500)
+
+
+class TestDma:
+    """A DMA channel takes counts off the state machine, which decode reads from its ring."""
+
+    def channel(self):
+        assert len(FakeDMA.channels) == 1
+        return FakeDMA.channels[0]
+
+    def test_starting_claims_a_channel_paced_by_the_rx_fifo(self):
+        receiver = PulseReceiver(pin_num=3, pio=1, sm=3)
+        receiver.start()
+        channel = self.channel()
+
+        assert channel.read == 0x50300020 + 3 * 4
+        assert channel.ctrl["treq_sel"] == 12 + 3
+        assert channel.ctrl["inc_read"] is False and channel.ctrl["inc_write"] is True
+        assert channel.ctrl["size"] == 2 and channel.ctrl["ring_sel"] is True
+        assert channel.running
+
+    def test_the_ring_is_aligned_to_its_size(self):
+        receiver = PulseReceiver(pin_num=3, pio=0, sm=0)
+        receiver.start()
+        channel = self.channel()
+
+        ring_bytes = 1 << channel.ctrl["ring_size"]
+        assert channel.write % ring_bytes == 0
+        assert ring_bytes == RING_COUNTS * 4
+
+    def test_counts_are_read_in_order_round_the_ring(self, analysed):
+        receiver = receiver_with()
+        # More than the ring holds, decoded a little at a time so none is overwritten
+        sequences = [[(9000 - index, 4500)] for index in range(RING_COUNTS)]
+        state_machine = receiver._PulseReceiver__sm
+        for sequence in sequences:
+            state_machine.feed(count_pair(*sequence[0]), TIMEOUT_REACHED)
+            receiver.decode_no_filter()
+
+        assert analysed == sequences
+
+    def test_a_ring_gone_round_unread_drops_what_it_lost(self, analysed):
+        receiver = receiver_with()
+        state_machine = receiver._PulseReceiver__sm
+        state_machine.feed(*([count_pair(560, 560)] * (RING_COUNTS + 10)))
+        receiver.decode_no_filter()
+        state_machine.feed(count_pair(9000, 4500), TIMEOUT_REACHED)
+        receiver.decode_no_filter()
+
+        # The overrun sequence is dropped, and the next one arrives whole
+        assert analysed == [[(9000, 4500)]]
+
+    def test_a_spent_channel_is_armed_again(self, analysed, monkeypatch):
+        # A run of two counts, which the first sequence uses up
+        monkeypatch.setattr(receive, "DMA_COUNT", 2)
+        receiver = receiver_with()
+        channel = self.channel()
+        state_machine = receiver._PulseReceiver__sm
+        state_machine.feed(count_pair(9000, 4500), TIMEOUT_REACHED)
+        assert not channel.running
+
+        receiver.decode_no_filter()
+        state_machine.feed(count_pair(9000, 2250), TIMEOUT_REACHED)
+        receiver.decode_no_filter()
+
+        assert analysed == [[(9000, 4500)], [(9000, 2250)]]
+        assert channel.running
+
+    def test_a_reset_skips_counts_still_in_the_ring(self, analysed):
+        receiver = receiver_with()
+        state_machine = receiver._PulseReceiver__sm
+        state_machine.feed(count_pair(9000, 4500), TIMEOUT_REACHED)
+        receiver.reset()
+        receiver.decode_no_filter()
+
+        assert analysed == []
+
+    def test_stopping_frees_the_channel(self):
+        receiver = PulseReceiver(pin_num=3, pio=0, sm=0)
+        receiver.start()
+        channel = self.channel()
+        receiver.stop()
+
+        assert channel.closed and FakeDMA.channels == []
+
+    def test_starting_again_takes_a_fresh_channel(self, analysed):
+        receiver = PulseReceiver(pin_num=3, pio=0, sm=0)
+        receiver.start()
+        receiver.stop()
+        receiver.start()
+        receiver._PulseReceiver__sm.feed(count_pair(9000, 4500), TIMEOUT_REACHED)
+        receiver.decode_no_filter()
+
+        assert analysed == [[(9000, 4500)]]
+
+    def test_with_every_channel_taken_the_interrupt_stands_in(self, analysed):
+        FakeDMA.refuse = True
+        receiver = receiver_with(count_pair(9000, 4500), TIMEOUT_REACHED)
+        receiver.decode_no_filter()
+
+        assert FakeDMA.channels == []
+        assert analysed == [[(9000, 4500)]]
+
+    def test_without_dma_the_interrupt_stands_in(self, analysed, monkeypatch):
+        monkeypatch.setattr(receive, "DMA", None)
+        receiver = receiver_with(count_pair(9000, 4500), TIMEOUT_REACHED)
+        receiver.decode_no_filter()
+
+        assert FakeDMA.channels == []
+        assert analysed == [[(9000, 4500)]]

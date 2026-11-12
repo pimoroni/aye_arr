@@ -103,14 +103,117 @@ class FakeStateMachine:
     def get(self):
         return self.__rx.pop(0)
 
+    def rx_address(self):
+        """The address of this state machine's RX FIFO register, as the RP2 maps it."""
+        return 0x50200020 + (self.index // 4) * 0x100000 + (self.index % 4) * 4
+
     def feed(self, *count_pairs):
-        """Queue count pairs as though the PIO program had received them."""
-        self.__rx.extend(count_pairs)
+        """
+        Queue count pairs as though the PIO program had received them, where a running
+        DMA channel copies them off at once, as the hardware would.
+        """
+        for count_pair in count_pairs:
+            for channel in FakeDMA.channels:
+                if channel.running and channel.read == self.rx_address():
+                    channel.transfer(count_pair)
+                    break
+            else:
+                self.__rx.append(count_pair)
 
     def trigger_irq(self):
         """Run the handler the receiver registered, as the PIO's interrupt would."""
         if self.__handler is not None:
             self.__handler(self)
+
+
+class FakeMemory:
+    """
+    Addresses for the buffers uctypes.addressof is asked about, each 4 bytes past a 64KB
+    boundary, so code aligning a ring within a buffer has to move it along.
+    """
+
+    __buffers = []
+
+    @classmethod
+    def addressof(cls, buffer):
+        for base, held in cls.__buffers:
+            if held is buffer:
+                return base
+        base = 0x20000004 + len(cls.__buffers) * 0x10000
+        cls.__buffers.append((base, buffer))
+        return base
+
+    @classmethod
+    def find(cls, address):
+        """The buffer an address falls in, and that buffer's own address."""
+        for base, buffer in cls.__buffers:
+            if base <= address < base + len(buffer):
+                return buffer, base
+        raise ValueError(f"no buffer at 0x{address:08x}")
+
+    @classmethod
+    def reset_all(cls):
+        cls.__buffers.clear()
+
+
+class FakeDMA:
+    """
+    An rp2.DMA channel that copies each count a state machine is fed into the buffer it
+    writes to, wrapping in its ring and counting down, as a channel paced by the RX FIFO does.
+    Channels can be refused, as the hardware's run out.
+    """
+
+    channels = []
+    refuse = False
+
+    def __init__(self):
+        if FakeDMA.refuse:
+            raise OSError("no free DMA channel")
+        self.read = None
+        self.write = None
+        self.count = 0
+        self.ctrl = None
+        self.running = False
+        self.closed = False
+        self.__next = None
+        FakeDMA.channels.append(self)
+
+    def pack_ctrl(self, **fields):
+        return dict(fields)
+
+    def config(self, read=None, write=None, count=None, ctrl=None, trigger=False):
+        self.read, self.write, self.count, self.ctrl = read, write, count, ctrl
+        self.__next = write
+        self.running = trigger
+
+    def active(self, value=None):
+        if value is None:
+            return self.running
+        self.running = bool(value)
+        return self.running
+
+    def close(self):
+        self.running = False
+        self.closed = True
+        FakeDMA.channels.remove(self)
+
+    def transfer(self, word):
+        """Write one word where the channel points, then step on round its ring."""
+        buffer, base = FakeMemory.find(self.__next)
+        offset = self.__next - base
+        buffer[offset:offset + 4] = word.to_bytes(4, "little")
+
+        ring = 1 << self.ctrl["ring_size"]
+        start = self.__next & ~(ring - 1)
+        self.__next = start + (self.__next - start + 4) % ring
+        self.count -= 1
+        if self.count == 0:
+            self.running = False
+
+    @classmethod
+    def reset_all(cls):
+        cls.channels.clear()
+        cls.refuse = False
 
 
 class FakePIO:
@@ -211,6 +314,11 @@ def __install_stubs():
     rp2 = types.ModuleType("rp2")
     rp2.PIO = FakePIO
     rp2.StateMachine = FakeStateMachine
+    rp2.DMA = FakeDMA
+
+    uctypes = types.ModuleType("uctypes")
+    uctypes.addressof = FakeMemory.addressof
+    sys.modules["uctypes"] = uctypes
 
     # The PIO programs are only defined, never run, so the decorator can pass
     # the function through and leave its assembly names unresolved
@@ -227,6 +335,16 @@ def reset_pio_state():
     FakePIO.reset_all()
     yield
     FakePIO.reset_all()
+
+
+@pytest.fixture(autouse=True)
+def reset_dma_state():
+    """Free every DMA channel and buffer address between tests."""
+    FakeDMA.reset_all()
+    FakeMemory.reset_all()
+    yield
+    FakeDMA.reset_all()
+    FakeMemory.reset_all()
 
 
 @pytest.fixture(autouse=True)

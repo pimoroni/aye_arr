@@ -10,9 +10,36 @@ from rp2 import PIO, StateMachine
 from .common import DebugPin, Pulse
 from .pio.rx import FREQUENCY, TIMEOUT_REACHED, count_to_burst_us, count_to_idle_us, pulsereader, pulsereader_debug
 
+# A port built without DMA takes the received counts by interrupt instead
+try:
+    from rp2 import DMA
+    from uctypes import addressof
+except ImportError:
+    DMA = None
+
 # Constants
 MAX_BUFFER = const(1024)
 DEFAULT_FILTER_THRESHOLD_US = const(200)
+
+# The ring the DMA copies received counts into, which must be a power of two in size and
+# aligned to it for the DMA to wrap its writes there. 256 counts is several remote presses
+RING_COUNTS = const(256)
+RING_BYTES = const(RING_COUNTS * 4)
+RING_SIZE_BITS = const(10)              # RING_BYTES as a power of two
+
+# How many counts the DMA takes before it is armed again. The top four bits stay clear, as
+# the RP2350 reads them as the transfer's mode
+DMA_COUNT = const(0x0fffffff)
+
+# The RX FIFO register of PIO 0's state machine 0, and how far apart the PIOs' registers sit.
+# Each state machine's register is the next word along
+PIO0_RXF0 = const(0x50200020)
+PIO_REGISTER_STEP = const(0x100000)
+
+# The DMA request that PIO 0's state machine 0 raises when its RX FIFO holds a count, and
+# how far apart the PIOs' requests are. Each state machine's request is the next along
+DREQ_PIO0_RX0 = const(4)
+DREQ_PIO_STEP = const(8)
 
 
 class PulseReceiver:
@@ -21,6 +48,13 @@ class PulseReceiver:
         self.__counts = deque((), MAX_BUFFER)
         self.__sequence = []
         self.__last_pulse = None
+
+        # The DMA channel copying counts off the state machine, its ring, and how many counts
+        # have been taken from the ring since the channel was armed. None until started
+        self.__dma = None
+        self.__ring = None
+        self.__ring_start = 0
+        self.__taken = 0
 
         # Check the PIO is valid
         try:
@@ -63,17 +97,76 @@ class PulseReceiver:
         # Set up debug pin for scoping
         self.__debug_blip_pin = DebugPin(debug_blip_pin, Pin.OUT)
 
+        # Where the DMA reads this state machine's counts from, and the request it waits on
+        self.__rx_fifo = PIO0_RXF0 + (pio * PIO_REGISTER_STEP) + (sm * 4)
+        self.__dreq = DREQ_PIO0_RX0 + (pio * DREQ_PIO_STEP) + sm
+
     def start(self):
-        self.__sm.irq(self.__handler)
+        # The DMA takes each count off the state machine as it arrives, with no code waiting to
+        # run. An interrupt handler waits on the scheduler, which other work, such as a screen
+        # being sent a frame, can hold up for longer than the RX FIFO lasts
+        if DMA is not None:
+            try:
+                self.__dma = DMA()
+            except OSError:
+                self.__dma = None    # Every channel is taken, so the interrupt handler stands in
+        if self.__dma is not None:
+            self.__arm()
+        else:
+            self.__sm.irq(self.__handler)
         self.__sm.active(1)
 
     def stop(self):
         self.__sm.active(0)
-        self.__sm.irq(None)
+        if self.__dma is not None:
+            self.__dma.close()
+            self.__dma = None
+        else:
+            self.__sm.irq(None)
 
     def reset(self):
         self.__counts = deque((), MAX_BUFFER)
         self.__sequence = []
+        if self.__dma is not None:
+            self.__taken = DMA_COUNT - self.__dma.count
+
+    def __arm(self):
+        # Point the DMA at a ring aligned to its own size, inside a buffer twice that size, so
+        # it writes counts round the ring while the state machine has them
+        if self.__ring is None:
+            self.__ring = bytearray(RING_BYTES * 2)
+            address = addressof(self.__ring)
+            self.__ring_start = ((address + RING_BYTES - 1) & ~(RING_BYTES - 1)) - address
+
+        ctrl = self.__dma.pack_ctrl(size=2, inc_read=False, inc_write=True,
+                                    ring_size=RING_SIZE_BITS, ring_sel=True, treq_sel=self.__dreq)
+        self.__dma.config(read=self.__rx_fifo, write=addressof(self.__ring) + self.__ring_start,
+                          count=DMA_COUNT, ctrl=ctrl, trigger=True)
+        self.__taken = 0
+
+    def __collect(self):
+        # Move the counts the DMA has written since the last decode onto the deque
+        if self.__dma is None:
+            return
+
+        written = DMA_COUNT - self.__dma.count
+
+        # Check if the ring went round before these were read, losing the oldest of them and
+        # with them the sequence they were part of
+        if written - self.__taken > RING_COUNTS:
+            self.__taken = written
+            self.__sequence.clear()
+            self.__last_pulse = None
+            return
+
+        while self.__taken < written:
+            at = self.__ring_start + (self.__taken % RING_COUNTS) * 4
+            self.__counts.append(int.from_bytes(self.__ring[at:at + 4], "little"))
+            self.__taken += 1
+
+        # A channel that has taken all its counts is armed again, its ring read to the end
+        if written == DMA_COUNT:
+            self.__arm()
 
     @micropython.native
     def __handler(self, sm):
@@ -101,6 +194,8 @@ class PulseReceiver:
 
         if not self.__sm.active():
             raise RuntimeError("Cannot decode IR signals. Check that you have called `.start()` on the receiver first.")
+
+        self.__collect()
 
         # Go through all counts currently stored
         while len(self.__counts) > 0:
@@ -134,6 +229,8 @@ class PulseReceiver:
 
         if not self.__sm.active():
             raise RuntimeError("Cannot decode IR signals. Check that you have called `.start()` on the receiver first.")
+
+        self.__collect()
 
         # Go through all counts currently stored
         while len(self.__counts) > 0:
